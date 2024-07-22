@@ -21,12 +21,15 @@ If not, see <https://www.gnu.org/licenses/>. 
 
 import sys
 
-from .processor import process_line
+from .processor import process_line, SourceProcessor
 
 
 class PrettyPrinterCli:
+    def __init__(self):
+        self._processor = SourceProcessor()
+
     def processLine(self, line: str):
-        print(process_line(line))
+        print(self._processor.process_line(line))
 
     def run(self):
         for line in sys.stdin:

@@ -60,12 +60,65 @@ def test_that_it_does_pretty_print_comment_lines():
             out.getvalue()
             == """* a comment line starting with a semi-colon
 * a comment line starting with a star
- * not a comment line
+                              ; not a comment line
 ** a comment line for documentation generator tools
 ** another comment line for documentation generator tools
 * * a normal comment line
 * a space will be inserted before the beginning of this comment
 *       a comment line with a lot of white space before
 *   a comment line with a tabulation before
+"""
+        )
+
+
+def test_that_it_does_pretty_print_statement_lines():
+    input_lines = [
+        "aShortLabel operation operand1,operand2 comment",
+        "aVeryLongLabelThatWontFitInTheFirstThirtyCharacters: what ever",
+        " aLabelWithoutFinalColon operation op1,op2 comment",
+        " aLabelWithColon: operation op1,op2 comment",
+        "aSpaceWithinOperand: operation op1, op2 comment",
+        " operation comment missing semi-colon",
+        " ; just a comment",
+        "noComment: do something",
+        " ;just a comment",
+        " do other,thing a comment",
+        "",
+        " ;just a comment",
+        " ;that will be aligned",
+        " ;      like the previous ones",
+        " do something",
+        "* a comment line",
+        " * a block of statement line ",
+        " * with only comments",
+        "that is all folks !",
+    ]
+    baseArgs = ["prog"]
+    with patch.object(sys, "argv", baseArgs):
+        with patch.object(sys, "stdin", mockStdInput(input_lines)):
+            with redirect_stdout(io.StringIO()) as out:
+                returnCode = PrettyPrinterCli().run()
+        assert returnCode == 0
+        assert (
+            out.getvalue()
+            == """                 aShortLabel: operation operand1,operand2 ; comment
+aVeryLongLabelThatWontFitInTheFirstThirtyCharacters: what ever
+                              aLabelWithoutFinalColon operation ; op1,op2 comment
+             aLabelWithColon: operation op1,op2    ; comment
+         aSpaceWithinOperand: operation op1,       ; op2 comment
+                              operation comment    ; missing semi-colon
+                                                   ; just a comment
+                   noComment: do something
+                                                   ; just a comment
+                              do other,thing       ; a comment
+
+                              ; just a comment
+                              ; that will be aligned
+                              ; like the previous ones
+                              do something
+* a comment line
+                              ; a block of statement line
+                              ; with only comments
+                        that: is all               ; folks !
 """
         )
