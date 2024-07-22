@@ -1,6 +1,6 @@
 [project]
 name = "spasm"
-version = "0.0.1-SNAPSHOT"
+version = "0.0.1.dev"
 description = "Sporniket's toolbox for assembly language"
 authors = [
     {name = "David SPORN", email = "sporniket.studio@gmail.com"},
@@ -9,6 +9,16 @@ dependencies = []
 requires-python = ">=3.10"
 readme = "README.md"
 license = {text = "GPL-3.0-or-later"}
+
+
+[build-system]
+requires = ["pdm-backend"]
+build-backend = "pdm.backend"
+
+
+[tool.pdm]
+distribution = true
+
 
 [tool.pdm.scripts]
 # --- cleaning
@@ -37,6 +47,7 @@ ci = { composite = ["clean", "lint_ci", "_ci_only"] }
 _pytest = "python3 -m pytest -vv"
 test = { composite = ["clean", "reformat", "_pytest"] }
 
+
 [tool.pdm.dev-dependencies]
 lint = [
     "black>=24.4.2",
@@ -55,6 +66,7 @@ build = [
     "pip>=24.1.2",
     "twine>=5.1.1",
 ]
+
 
 [tool.pytest.ini_options]
 pythonpath = [
