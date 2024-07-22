@@ -1,5 +1,5 @@
 [project]
-name = "spasm"
+name = "spasm-by-sporniket"
 version = "0.0.1.dev"
 description = "Sporniket's toolbox for assembly language"
 authors = [
@@ -9,6 +9,10 @@ dependencies = []
 requires-python = ">=3.10"
 readme = "README.md"
 license = {text = "GPL-3.0-or-later"}
+
+
+[project.scripts]
+spasm_pp = "spasm.pp.__main__:main"
 
 
 [build-system]
