@@ -122,3 +122,22 @@ aVeryLongLabelThatWontFitInTheFirstThirtyCharacters: what ever
                         that: is all               ; folks !
 """
         )
+
+
+def test_that_it_output_empty_lines_when_there_is_only_a_marker_for_comment():
+    input_lines = [
+        ";",
+        " ;",
+    ]
+    baseArgs = ["prog"]
+    with patch.object(sys, "argv", baseArgs):
+        with patch.object(sys, "stdin", mockStdInput(input_lines)):
+            with redirect_stdout(io.StringIO()) as out:
+                returnCode = PrettyPrinterCli().run()
+        assert returnCode == 0
+        assert (
+            out.getvalue()
+            == """
+
+"""
+        )

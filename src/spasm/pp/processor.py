@@ -35,6 +35,10 @@ def compute_next_tab(pos: int) -> int:
 
 def process_comment_line(line: str) -> str:
     body = line[1:]
+    if is_empty_string(body):
+        # sanity check
+        return ""
+
     prefix = "*" if body[0] == "*" else "* "
     current_pos = len(prefix)
     next_tab = compute_next_tab(current_pos)
@@ -158,7 +162,8 @@ class StatementLine:
 
     def isCommentOnly(self) -> bool:
         return (
-            is_empty_string(self.label)
+            not is_empty_string(self.comment)
+            and is_empty_string(self.label)
             and is_empty_string(self.mnemonic)
             and is_empty_string(self.operands)
         )
