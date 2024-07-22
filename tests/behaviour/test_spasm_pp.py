@@ -141,3 +141,26 @@ def test_that_it_output_empty_lines_when_there_is_only_a_marker_for_comment():
 
 """
         )
+
+
+def test_that_it_ignore_spaces_in_string_litteral_in_operands():
+    input_lines = [
+        '"what a" cool world it is',
+        'what "a cool "world it is',
+        'what a "cool world" it is',
+        'what a cool "world it" is',
+    ]
+    baseArgs = ["prog"]
+    with patch.object(sys, "argv", baseArgs):
+        with patch.object(sys, "stdin", mockStdInput(input_lines)):
+            with redirect_stdout(io.StringIO()) as out:
+                returnCode = PrettyPrinterCli().run()
+        assert returnCode == 0
+        assert (
+            out.getvalue()
+            == """                       \"what: a\" cool              ; world it is
+                        what: \"a cool              ; \"world it is
+                        what: a \"cool world\"       ; it is
+                        what: a cool               ; \"world it\" is
+"""
+        )

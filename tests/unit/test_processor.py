@@ -139,3 +139,13 @@ def test_that__StatementLineParser_parse__supports_comment_only_statement():
     assert statement.mnemonic == ""
     assert statement.operands == ""
     assert statement.comment == "just a star comment"
+
+
+def test_that__StatementLineParser_parse__ignore_spaces_in_string_operands():
+    statement = StatementLineParser().parse(
+        'messThatsAll            dc.b                    "Done, press any key to quit.",0'
+    )
+    assert statement.label == "messThatsAll"
+    assert statement.mnemonic == "dc.b"
+    assert statement.operands == '"Done, press any key to quit.",0'
+    assert statement.comment == ""

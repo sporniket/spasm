@@ -260,7 +260,10 @@ class StatementLineParser:
                             self._state = WAIT_COMMENT_BODY
                             continue
                         else:
-                            self._state = ACCUMULATE_OPERANDS
+                            if c in MARKERS__STRING:
+                                self._state = INSIDE_STRING_LITTERAL
+                            else:
+                                self._state = ACCUMULATE_OPERANDS
                             accumulator = c
                             result.operands = accumulator
                             continue
