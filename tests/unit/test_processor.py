@@ -39,9 +39,9 @@ def test_that__StatementLine__properties_work():
 
 def test_that__StatementLine_isCommentOnly__works():
     statement = StatementLine()
-    statement.label = None
-    statement.mnemonic = None
-    statement.operands = None
+    statement.label = ""
+    statement.mnemonic = ""
+    statement.operands = ""
     statement.comment = "end of line"
     assert statement.isCommentOnly()
 
@@ -108,34 +108,34 @@ def test_that__StatementLineParser_parse__captures_last_position_operand():
     assert statement.label == "aShortLabel"
     assert statement.mnemonic == "operation"
     assert statement.operands == "operand1,operand2"
-    assert statement.comment == None
+    assert statement.comment == ""
 
 
 def test_that__StatementLineParser__parse_captures_last_position_mnemonic():
     statement = StatementLineParser().parse("aShortLabel operation")
     assert statement.label == "aShortLabel"
     assert statement.mnemonic == "operation"
-    assert statement.operands == None
-    assert statement.comment == None
+    assert statement.operands == ""
+    assert statement.comment == ""
 
 
 def test_that__StatementLineParser_parse__captures_last_position_label():
     statement = StatementLineParser().parse("aShortLabel")
     assert statement.label == "aShortLabel"
-    assert statement.mnemonic == None
-    assert statement.operands == None
-    assert statement.comment == None
+    assert statement.mnemonic == ""
+    assert statement.operands == ""
+    assert statement.comment == ""
 
 
 def test_that__StatementLineParser_parse__supports_comment_only_statement():
     statement = StatementLineParser().parse(" ; just a semi-colon comment")
-    assert statement.label == None
-    assert statement.mnemonic == None
-    assert statement.operands == None
+    assert statement.label == ""
+    assert statement.mnemonic == ""
+    assert statement.operands == ""
     assert statement.comment == "just a semi-colon comment"
 
     statement = StatementLineParser().parse(" * just a star comment")
-    assert statement.label == None
-    assert statement.mnemonic == None
-    assert statement.operands == None
+    assert statement.label == ""
+    assert statement.mnemonic == ""
+    assert statement.operands == ""
     assert statement.comment == "just a star comment"

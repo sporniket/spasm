@@ -107,7 +107,7 @@ class StatementLine:
     @property
     def label(self) -> str:
         """The label part of the line, without any marker"""
-        return self._label
+        return self._label if self._label is not None else ""
 
     @label.setter
     def label(self, value: str):
@@ -120,7 +120,7 @@ class StatementLine:
     @property
     def mnemonic(self) -> str:
         """The mnemonic part of the line."""
-        return self._mnemonic
+        return self._mnemonic if self._mnemonic is not None else ""
 
     @mnemonic.setter
     def mnemonic(self, value: str):
@@ -133,7 +133,7 @@ class StatementLine:
     @property
     def operands(self) -> str:
         """The operands list."""
-        return self._operands
+        return self._operands if self._operands is not None else ""
 
     @operands.setter
     def operands(self, value: str):
@@ -146,7 +146,7 @@ class StatementLine:
     @property
     def comment(self) -> str:
         """The comment line, without any marker and whitespace striped on both ends"""
-        return self._comment
+        return self._comment if self._comment is not None else ""
 
     @comment.setter
     def comment(self, value: str):
@@ -350,7 +350,7 @@ class StatementLineRenderer:
 
     def renderLineBody(self, line: StatementLine) -> str:
         lineBody = f"{line.mnemonic} {line.operands}".rstrip()
-        if is_empty_string(lineBody) or lineBody == "None None":
+        if is_empty_string(lineBody):
             return "                     "
         elif len(lineBody) >= 20:
             return f"{lineBody} "
