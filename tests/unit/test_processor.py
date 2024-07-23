@@ -142,6 +142,7 @@ def test_that__StatementLineParser_parse__supports_comment_only_statement():
 
 
 def test_that__StatementLineParser_parse__ignore_spaces_in_string_operands():
+    """Bug report #4"""
     statement = StatementLineParser().parse(
         'messThatsAll            dc.b                    "Done, press any key to quit.",0'
     )

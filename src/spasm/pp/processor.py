@@ -160,6 +160,14 @@ class StatementLine:
     # Queries
     ##############################################
 
+    def isEmpty(self) -> bool:
+        return (
+            is_empty_string(self.comment)
+            and is_empty_string(self.label)
+            and is_empty_string(self.mnemonic)
+            and is_empty_string(self.operands)
+        )
+
     def isCommentOnly(self) -> bool:
         return (
             not is_empty_string(self.comment)
@@ -167,6 +175,12 @@ class StatementLine:
             and is_empty_string(self.mnemonic)
             and is_empty_string(self.operands)
         )
+
+    def isCommentedOperation(self) -> bool:
+        return not is_empty_string(self.mnemonic) and not is_empty_string(self.comment)
+
+    def isOperationWithoutComment(self) -> bool:
+        return not is_empty_string(self.mnemonic) and is_empty_string(self.comment)
 
 
 class StatementLineParser:
@@ -375,10 +389,11 @@ class StatementLineRenderer:
 
     def render(self, line: StatementLine) -> str:
         """Apply formatting rules"""
+        if line.isEmpty():
+            return ""
         if line.isCommentOnly() and self.commentBlockEnabled:
             return f"                              ; {line.comment}".rstrip()
         else:
-            self.denyCommentBlock()
             return (
                 self.renderLabel(line)
                 + self.renderLineBody(line)
@@ -408,4 +423,8 @@ class SourceProcessor:
             return process_comment_line(cleaned_line)
 
         statementLine = self._parser.parse(cleaned_line)
+        if statementLine.isCommentedOperation():
+            self._renderer.denyCommentBlock()
+        elif statementLine.isEmpty() or statementLine.isOperationWithoutComment():
+            self._renderer.allowCommentBlock()
         return self._renderer.render(statementLine)

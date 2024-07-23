@@ -109,7 +109,7 @@ aVeryLongLabelThatWontFitInTheFirstThirtyCharacters: what ever
                               operation comment    ; missing semi-colon
                                                    ; just a comment
                    noComment: do something
-                                                   ; just a comment
+                              ; just a comment
                               do other,thing       ; a comment
 
                               ; just a comment
@@ -125,6 +125,7 @@ aVeryLongLabelThatWontFitInTheFirstThirtyCharacters: what ever
 
 
 def test_that_it_output_empty_lines_when_there_is_only_a_marker_for_comment():
+    """Bug report #3"""
     input_lines = [
         ";",
         " ;",
@@ -144,6 +145,7 @@ def test_that_it_output_empty_lines_when_there_is_only_a_marker_for_comment():
 
 
 def test_that_it_ignore_spaces_in_string_litteral_in_operands():
+    """Bug report #4"""
     input_lines = [
         '"what a" cool world it is',
         'what "a cool "world it is',
@@ -162,5 +164,53 @@ def test_that_it_ignore_spaces_in_string_litteral_in_operands():
                         what: \"a cool              ; \"world it is
                         what: a \"cool world\"       ; it is
                         what: a cool               ; \"world it\" is
+"""
+        )
+
+
+def test_that_it_does_not_force_comment_at_pos_50_after_statement_line_without_comment():
+    """Bug report #5"""
+    input_lines = [
+        "; ================================================================================================================",
+        "IKBDHELP_test3",
+        "                        ; ---",
+        "                        ; prepare",
+        "                        ;",
+        "                        ; ---",
+        "                        ; execute",
+        "                        ;",
+        "                        ikbd_withString         a6,#.ikbdStrBuffer",
+        "                        ikbd_pushFirstByte      a6,#IKBD_CMD_MS_OFF",
+        "                        ikbd_pushSecondByte     a6,#IKBD_CMD_ST_JS_EVT",
+        "                        ; ---",
+        "                        ; verify that IkbdString_length(a6) == 1",
+        "                        ;",
+        "                        moveq           #0,d0",
+        "                        move.w          IkbdString_length(a6),d0",
+    ]
+    baseArgs = ["prog"]
+    with patch.object(sys, "argv", baseArgs):
+        with patch.object(sys, "stdin", mockStdInput(input_lines)):
+            with redirect_stdout(io.StringIO()) as out:
+                returnCode = PrettyPrinterCli().run()
+        assert returnCode == 0
+        assert (
+            out.getvalue()
+            == """* ================================================================================================================
+              IKBDHELP_test3:
+                              ; ---
+                              ; prepare
+
+                              ; ---
+                              ; execute
+
+                              ikbd_withString a6,#.ikbdStrBuffer
+                              ikbd_pushFirstByte a6,#IKBD_CMD_MS_OFF
+                              ikbd_pushSecondByte a6,#IKBD_CMD_ST_JS_EVT
+                              ; ---
+                              ; verify that IkbdString_length(a6) == 1
+
+                              moveq #0,d0
+                              move.w IkbdString_length(a6),d0
 """
         )
