@@ -214,3 +214,25 @@ def test_that_it_does_not_force_comment_at_pos_50_after_statement_line_without_c
                               move.w IkbdString_length(a6),d0
 """
         )
+
+
+def test_that_it_forces_labels_at_first_position_for_macro_directives():
+    """Bug report #6"""
+    input_lines = [
+        " Print: macro",
+        " Print: macro.w",
+        " Print: macro.l",
+    ]
+    baseArgs = ["prog"]
+    with patch.object(sys, "argv", baseArgs):
+        with patch.object(sys, "stdin", mockStdInput(input_lines)):
+            with redirect_stdout(io.StringIO()) as out:
+                returnCode = PrettyPrinterCli().run()
+        assert returnCode == 0
+        assert (
+            out.getvalue()
+            == """Print:                        macro
+Print:                        macro.w
+Print:                        macro.l
+"""
+        )

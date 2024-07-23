@@ -23,6 +23,7 @@ MARKERS__COMMENT = [";", "*"]
 MARKERS__STRING = ['"', "'"]
 MARKERS__LABEL = [":"]
 WHITESPACES = [" ", "\t"]
+DIRECTIVES__MACRO = ["macro", "macro.w", "macro.l"]
 
 
 def is_comment_line(line: str) -> bool:
@@ -181,6 +182,10 @@ class StatementLine:
 
     def isOperationWithoutComment(self) -> bool:
         return not is_empty_string(self.mnemonic) and is_empty_string(self.comment)
+
+    def isMacroDeclaration(self) -> bool:
+        m = self.mnemonic.lower()
+        return m in DIRECTIVES__MACRO
 
 
 class StatementLineParser:
@@ -367,8 +372,11 @@ class StatementLineRenderer:
         elif len(line.label) >= 28:
             return f"{line.label}: "
         else:
-            paddedLabel = f"                            {line.label}"[-28:]
-            return f"{paddedLabel}: "
+            return (
+                f"{line.label}:                             "[:30]
+                if line.isMacroDeclaration()
+                else f"                            {line.label}: "[-30:]
+            )
 
     def renderLineBody(self, line: StatementLine) -> str:
         lineBody = f"{line.mnemonic} {line.operands}".rstrip()
