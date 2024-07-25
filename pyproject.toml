@@ -3,12 +3,19 @@ name = "spasm-by-sporniket"
 version = "0.0.1"
 description = "Sporniket's toolbox for assembly language"
 authors = [
-    {name = "David SPORN", email = "sporniket.studio@gmail.com"},
+    {name = "Sporniket", email = "sporniket.studio@gmail.com"},
 ]
 dependencies = []
 requires-python = ">=3.10"
 readme = "README.md"
 license = {text = "GPL-3.0-or-later"}
+keywords = ["assembler","pretty printer"]
+
+[project.urls]
+homepage = "https://github.com/sporniket/spasm"
+#TODO documentation = "https://readthedocs.org"
+repository = "https://github.com/sporniket/spasm"
+bug-tracker = "https://github.com/sporniket/spasm/issues"
 
 
 [project.scripts]
