@@ -21,7 +21,7 @@ If not, see <https://www.gnu.org/licenses/>. 
 
 import sys
 
-from .processor import process_line, SourceProcessor
+from .processor import SourceProcessor
 
 
 class PrettyPrinterCli:
