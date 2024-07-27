@@ -113,6 +113,9 @@ class StatementLine:
             self.comment
         )
 
+    def isNoOperation(self) -> bool:
+        return _is_empty_string(self.mnemonic) and _is_empty_string(self.operands)
+
     def isOperationWithoutComment(self) -> bool:
         return not _is_empty_string(self.mnemonic) and _is_empty_string(self.comment)
 

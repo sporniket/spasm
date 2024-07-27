@@ -26,8 +26,11 @@ import shutil
 import sys
 import time
 
+from contextlib import redirect_stdout
 from typing import List
 from unittest.mock import patch
+
+from spasm.pp import PrettyPrinterCli
 
 
 def mockStdInput(lines):
@@ -55,3 +58,14 @@ def initializeTmpWorkspace(files: List[str]) -> str:
 
 def assert_that_source_is_converted_as_expected(pathActual: str, pathExpected: str):
     assert filecmp.cmp(pathActual, pathExpected, shallow=False)
+
+
+def verify_behaviour_using_standard_input(
+    input_lines: List[str], baseArgs: List[str], expected: str
+):
+    with patch.object(sys, "argv", baseArgs):
+        with patch.object(sys, "stdin", mockStdInput(input_lines)):
+            with redirect_stdout(io.StringIO()) as out:
+                returnCode = PrettyPrinterCli().run()
+        assert returnCode == 0
+        assert out.getvalue() == expected

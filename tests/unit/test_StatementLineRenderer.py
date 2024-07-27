@@ -19,6 +19,7 @@ If not, see <https://www.gnu.org/licenses/>. 
 ---
 """
 
+from spasm.pp.stylesheet.builtin import SPORNIKET
 from spasm.pp.statement_line import StatementLine, StatementLineRenderer
 
 
@@ -29,7 +30,7 @@ def test_that__StatementLineRenderer_render__works():
     statement.operands = "folks"
     statement.comment = "end of line"
     assert (
-        StatementLineRenderer().render(statement)
+        StatementLineRenderer().render(statement, SPORNIKET)
         == "                      that's: all folks            ; end of line"
     )
 
@@ -42,10 +43,11 @@ def test_that__StatementLineRenderer_render__supports_comment_only_statement():
     statement.comment = "just a comment"
     renderer = StatementLineRenderer()
     assert (
-        renderer.render(statement) == "                              ; just a comment"
+        renderer.render(statement, SPORNIKET)
+        == "                              ; just a comment"
     )
     renderer.denyCommentBlock()
     assert (
-        renderer.render(statement)
+        renderer.render(statement, SPORNIKET)
         == "                                                   ; just a comment"
     )

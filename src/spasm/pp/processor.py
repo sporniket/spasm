@@ -24,46 +24,55 @@ from ._utils import _is_empty_string
 from .statement_line import StatementLineParser, StatementLineRenderer
 
 
-def is_comment_line(line: str) -> bool:
-    return line[0] in MARKERS__COMMENT
-
-
-def compute_next_tab(pos: int) -> int:
-    return (pos + 4) // 4 * 4
-
-
-def process_comment_line(line: str) -> str:
-    body = line[1:]
-    if _is_empty_string(body):
-        # sanity check
-        return ""
-
-    prefix = "*" if body[0] == "*" else "* "
-    current_pos = len(prefix)
-    next_tab = compute_next_tab(current_pos)
-    for i, c in enumerate(body):
-        if c in WHITESPACES:
-            if i == 0 and c == " ":
-                continue  # first space has already been accounted for
-            prefix = prefix + c if c == " " else (prefix + "    ")[0:next_tab]
-            current_pos = len(prefix)
-            next_tab = compute_next_tab(current_pos)
-        else:
-            body = body[i:]
-            break
-    return f"{prefix}{body}"
-
-
 class SourceProcessor:
+
     def __init__(self):
         self._parser = StatementLineParser()
         self._renderer = StatementLineRenderer()
 
     ##############################################
+    # Processing comment lines
+    ##############################################
+
+    def is_comment_line(self, line: str) -> bool:
+        return line[0] in MARKERS__COMMENT
+
+    def compute_next_tab(self, pos: int, tabWidth: int) -> int:
+        return (pos + tabWidth) // tabWidth * tabWidth
+
+    def process_comment_line(self, line: str, stylesheet) -> str:
+        tabWidth = stylesheet["tabulation"]["width"]
+        tabAsSpaces = " " * tabWidth
+
+        body = line[1:]
+        if _is_empty_string(body):
+            # sanity check
+            return ""
+
+        prefixStylesheet = stylesheet["comment_lines"]["prefix"]
+        prefix = f"{prefixStylesheet} "
+        if body[0] == prefixStylesheet:
+            body = body[1:]
+            prefix = f"{prefixStylesheet}{prefixStylesheet} "
+        current_pos = len(prefix)
+        next_tab = self.compute_next_tab(current_pos, tabWidth)
+        for i, c in enumerate(body):
+            if c in WHITESPACES:
+                if i == 0 and c == " ":
+                    continue  # first space has already been accounted for
+                prefix = prefix + c if c == " " else (prefix + tabAsSpaces)[0:next_tab]
+                current_pos = len(prefix)
+                next_tab = self.compute_next_tab(current_pos, tabWidth)
+            else:
+                body = body[i:]
+                break
+        return f"{prefix}{body}"
+
+    ##############################################
     # Processing dispatcher
     ##############################################
 
-    def process_line(self, line: str) -> str:
+    def process_line(self, line: str, stylesheet) -> str:
         cleaned_line = line.rstrip()
         if len(cleaned_line) == 0:
             # Sanity check, no need to do anything
@@ -71,13 +80,13 @@ class SourceProcessor:
             self._renderer.allowCommentBlock()
             return cleaned_line
 
-        if is_comment_line(cleaned_line):
+        if self.is_comment_line(cleaned_line):
             self._renderer.allowCommentBlock()
-            return process_comment_line(cleaned_line)
+            return self.process_comment_line(cleaned_line, stylesheet)
 
         statementLine = self._parser.parse(cleaned_line)
         if statementLine.isCommentedOperation():
             self._renderer.denyCommentBlock()
         elif statementLine.isEmpty() or statementLine.isOperationWithoutComment():
             self._renderer.allowCommentBlock()
-        return self._renderer.render(statementLine)
+        return self._renderer.render(statementLine, stylesheet)

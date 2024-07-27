@@ -20,36 +20,146 @@ If not, see <https://www.gnu.org/licenses/>. 
 """
 
 import sys
+from argparse import ArgumentParser, RawDescriptionHelpFormatter
 
 from .processor import SourceProcessor
+from .stylesheet.builtin import SPORNIKET, HERITAGE
+from ._utils import _is_empty_string
 
 
 class PrettyPrinterCli:
+    @staticmethod
+    def createArgParser() -> ArgumentParser:
+        parser = ArgumentParser(
+            prog="python3 -m spasm.pp",
+            description="Pretty prints a source file written in assembly language.",
+            epilog="""---
+(c) 2024 David SPORN
+---
+This is part of SPASM -- Sporniket's toolbox for assembly language.
+
+SPASM is free software: you can redistribute it and/or
+modify it under the terms of the GNU General Public License as published by the
+Free Software Foundation, either version 3 of the License, or (at your option)
+any later version.
+
+SPASM is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
+or FITNESS FOR A PARTICULAR PURPOSE.
+
+See the GNU General Public License for more details.
+You should have received a copy of the GNU General Public License along with SPASM.
+If not, see <https://www.gnu.org/licenses/>. 
+---
+""",
+            formatter_class=RawDescriptionHelpFormatter,
+            allow_abbrev=False,
+        )
+
+        # Add the arguments
+        parser.add_argument(
+            "--stylesheet",
+            metavar="<stylesheet>",
+            type=str,
+            help="the formatting rules to follow, either 'builtin:heritage' (the default) or 'builtin:sporniket'",
+        )
+
+        parser.add_argument(
+            "sources",
+            metavar="<source files...>",
+            type=str,
+            nargs="*",
+            help="a list of source files",
+        )
+
+        commandGroup = parser.add_mutually_exclusive_group(required=False)
+        commandGroup.add_argument(
+            "-r",
+            "--rewrite",
+            action="store_true",
+            help=f"Replace the source files by their pretty-printed version WHEN THERE IS A DIFFERENCE.",
+        )
+        commandGroup.add_argument(
+            "-o",
+            "--output",
+            metavar="<output file>",
+            type=str,
+            help=f"Create the specified output file and write the output to that file instead of the standard output. When the output file already exists, it is replaced by the new version.",
+        )
+        commandGroup.add_argument(
+            "-d",
+            "--into",
+            metavar="<output directory>",
+            type=str,
+            help=f"Store the pretty-printed version of the sources files into the output directory. Existing files in that output directory are replaced when their names matches with one of the source files.",
+        )
+
+        return parser
+
     def __init__(self):
         self._processor = SourceProcessor()
 
-    def processLine(self, line: str):
-        print(self._processor.process_line(line))
+    def processLine(self, line: str, stylesheet):
+        print(self._processor.process_line(line, stylesheet))
+
+    def retrieveStyleSheet(self, stylesheetSpec: str):
+        ERROR = ValueError(
+            f"ERROR -- wrong value '{stylesheetSpec}' for parameter 'stylesheet'"
+        )
+
+        specKindMarkPosition = stylesheetSpec.find(":")
+        if specKindMarkPosition < 0:
+            raise ERROR
+
+        specKind = stylesheetSpec[:specKindMarkPosition]
+        if specKind not in ["builtin"]:
+            raise ERROR
+
+        specValue = stylesheetSpec[specKindMarkPosition + 1 :]
+        if specKind == "builtin":
+            if specValue == "sporniket":
+                return SPORNIKET
+            elif specValue == "heritage":
+                return HERITAGE
+            else:
+                raise ERROR
+        elif specKind == "file":
+            # place holder for custom stylesheets
+            raise ERROR
+        else:
+            raise ERROR
 
     def run(self):
-        for line in sys.stdin:
-            self.processLine(line)
+        try:
+            args = PrettyPrinterCli.createArgParser().parse_args()
+            stylesheet = (
+                HERITAGE
+                if _is_empty_string(args.stylesheet)
+                else self.retrieveStyleSheet(args.stylesheet)
+            )
+        except ValueError as e:
+            print(e, file=sys.stderr)
+            return 1
+        else:
+            for line in sys.stdin:
+                self.processLine(line, stylesheet)
 
-        return 0
+            return 0
 
     def runTMP(self):
+        stylesheet = SPORNIKET
         if len(args.sources) > 0:
             for source in args.sources:
                 if source == "-":
                     for line in sys.stdin:
-                        self.processLine(line)
+                        self.processLine(line, stylesheet)
                 else:
                     with open(source, "rt") as f:
                         lines = f.readlines()
                     for line in lines:
-                        self.processLine(line)
+                        self.processLine(line, stylesheet)
         else:
             for line in sys.stdin:
-                self.processLine(line)
+                self.processLine(line, stylesheet)
 
         return 0
