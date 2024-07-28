@@ -30,12 +30,12 @@ from .model import StatementLine
 
 # state machine states for parsing a statement line
 ACCUMULATE_LABEL = 0  # when first character is not whitespace --> DONE_LABEL
-WAIT_LABEL_OR_MNEMONICS = 1  # when first character is not whitespace, until not whitespace --> ACCUMULATE_LABEL_OR_MNEMONICS
-ACCUMULATE_LABEL_OR_MNEMONICS = (
-    2  # until ':' --> WAIT_MNEMONICS ; or until whitespace --> WAIT_OPERANDS_OR_COMMENT
+WAIT_LABEL_OR_MNEMONIC = 1  # when first character is not whitespace, until not whitespace --> ACCUMULATE_LABEL_OR_MNEMONIC
+ACCUMULATE_LABEL_OR_MNEMONIC = (
+    2  # until ':' --> WAIT_MNEMONIC ; or until whitespace --> WAIT_OPERANDS_OR_COMMENT
 )
-WAIT_MNEMONICS = 4  # until not whitespace --> ACCUMULATE_MNEMONICS
-ACCUMULATE_MNEMONICS = 5  # until whitespace --> WAIT_OPERANDS_OR_COMMENT
+WAIT_MNEMONIC = 4  # until not whitespace --> ACCUMULATE_MNEMONIC
+ACCUMULATE_MNEMONIC = 5  # until whitespace --> WAIT_OPERANDS_OR_COMMENT
 WAIT_OPERANDS_OR_COMMENT = 6  # until not whitespace --> ACCUMULATE_OPERANDS
 ACCUMULATE_OPERANDS = (
     7  # should understand string litterals ; until whitespace --> WAIT_COMMENT_BODY
@@ -65,7 +65,7 @@ class StatementLineParser:
                     accumulator = c
                     result.label = accumulator
                 else:
-                    self._state = WAIT_LABEL_OR_MNEMONICS
+                    self._state = WAIT_LABEL_OR_MNEMONIC
                     accumulator = ""
                 continue
             else:
@@ -75,22 +75,22 @@ class StatementLineParser:
                         continue
                     elif c in WHITESPACES or c in MARKERS__LABEL:
                         accumulator = ""
-                        self._state = WAIT_MNEMONICS
+                        self._state = WAIT_MNEMONIC
                         continue
                     else:
                         accumulator += c
                         result.label = accumulator
                         continue
-                elif self._state == WAIT_LABEL_OR_MNEMONICS:
+                elif self._state == WAIT_LABEL_OR_MNEMONIC:
                     if c in MARKERS__COMMENT:
                         self._state = WAIT_COMMENT_BODY
                         continue
                     elif c not in WHITESPACES:
-                        self._state = ACCUMULATE_LABEL_OR_MNEMONICS
+                        self._state = ACCUMULATE_LABEL_OR_MNEMONIC
                         accumulator = c
                         result.mnemonic = accumulator  # until disambiguation
                         continue
-                elif self._state == ACCUMULATE_LABEL_OR_MNEMONICS:
+                elif self._state == ACCUMULATE_LABEL_OR_MNEMONIC:
                     if c in MARKERS__COMMENT:
                         self._state = WAIT_COMMENT_BODY
                         continue
@@ -98,7 +98,7 @@ class StatementLineParser:
                         result.label = accumulator
                         result.mnemonic = None  # disambiguation in favor of label
                         accumulator = ""
-                        self._state = WAIT_MNEMONICS
+                        self._state = WAIT_MNEMONIC
                         continue
                     elif c in WHITESPACES:
                         accumulator = ""
@@ -108,16 +108,16 @@ class StatementLineParser:
                         accumulator += c
                         result.mnemonic = accumulator  # until disambiguation
                         continue
-                elif self._state == WAIT_MNEMONICS:
+                elif self._state == WAIT_MNEMONIC:
                     if c in MARKERS__COMMENT:
                         self._state = WAIT_COMMENT_BODY
                         continue
                     if c not in WHITESPACES:
-                        self._state = ACCUMULATE_MNEMONICS
+                        self._state = ACCUMULATE_MNEMONIC
                         accumulator = c
                         result.mnemonic = accumulator
                         continue
-                elif self._state == ACCUMULATE_MNEMONICS:
+                elif self._state == ACCUMULATE_MNEMONIC:
                     if c in MARKERS__COMMENT:
                         self._state = WAIT_COMMENT_BODY
                         continue

@@ -100,29 +100,29 @@ class StatementLineRenderer:
             stylesheet["tab_stops"]["labels"]["position"]
             + stylesheet["labels"]["margin_space"]
         )
-        tabStopOperands = stylesheet["tab_stops"]["operands"]["position"]
-        widthOfMnemonics = tabStopOperands - startPosition
-        tabStopsComments = stylesheet["tab_stops"]["comments"]["position"]
-        widthOfOperands = tabStopsComments - tabStopOperands - 1
-        widthOfOperation = tabStopsComments - startPosition
+        tabStopMnemonic = stylesheet["tab_stops"]["mnemonic"]["position"]
+        widthOfMnemonic = tabStopMnemonic - startPosition
+        tabStopsOperands = stylesheet["tab_stops"]["operands"]["position"]
+        widthOfOperands = tabStopsOperands - tabStopMnemonic - 1
+        widthOfOperation = tabStopsOperands - startPosition
 
         if line.isNoOperation():
             return " " * widthOfOperation
         elif _is_empty_string(line.operands):
-            postMnemonicsPadding = " " * widthOfOperation
+            postMnemonicPadding = " " * widthOfOperation
             return (
                 f"{line.mnemonic}"
-                if len(line.mnemonic) >= widthOfMnemonics
-                or len(line.mnemonic) + lenOfRenderedLabel >= tabStopsComments
-                else f"{line.mnemonic}{postMnemonicsPadding}"[:widthOfOperation]
+                if len(line.mnemonic) >= widthOfMnemonic
+                or len(line.mnemonic) + lenOfRenderedLabel >= tabStopsOperands
+                else f"{line.mnemonic}{postMnemonicPadding}"[:widthOfOperation]
             )
         else:
-            postMnemonicsPadding = " " * widthOfMnemonics
+            postMnemonicPadding = " " * widthOfMnemonic
             mnemonicPart = (
                 f"{line.mnemonic}"
-                if len(line.mnemonic) >= widthOfMnemonics
-                or len(line.mnemonic) + lenOfRenderedLabel >= tabStopOperands
-                else f"{line.mnemonic}{postMnemonicsPadding}"[:widthOfMnemonics]
+                if len(line.mnemonic) >= widthOfMnemonic
+                or len(line.mnemonic) + lenOfRenderedLabel >= tabStopMnemonic
+                else f"{line.mnemonic}{postMnemonicPadding}"[:widthOfMnemonic]
             )
 
             postOperandsPadding = " " * widthOfOperands
@@ -130,7 +130,7 @@ class StatementLineRenderer:
                 f"{mnemonicPart} {line.operands}"
                 if len({line.operands}) >= widthOfOperands
                 or len(mnemonicPart) + 1 + len(line.operands) + lenOfRenderedLabel
-                >= tabStopsComments
+                >= tabStopsOperands
                 else f"{mnemonicPart} {line.operands}{postOperandsPadding}"[
                     :widthOfOperation
                 ]

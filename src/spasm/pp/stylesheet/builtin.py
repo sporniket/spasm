@@ -22,8 +22,8 @@ If not, see <https://www.gnu.org/licenses/>. 
 SPORNIKET = {
     "tab_stops": {
         "labels": {"position": 29},
-        "operands": {"position": 30},
-        "comments": {"position": 50},
+        "mnemonic": {"position": 30},
+        "operands": {"position": 50},
     },
     "tabulation": {"width": 4},
     "labels": {
@@ -40,8 +40,8 @@ SPORNIKET = {
 HERITAGE = {
     "tab_stops": {
         "labels": {"position": 15},
-        "operands": {"position": 23},
-        "comments": {"position": 31},
+        "mnemonic": {"position": 23},
+        "operands": {"position": 31},
     },
     "tabulation": {"width": 8},
     "labels": {
