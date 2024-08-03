@@ -1,0 +1,8 @@
+{
+    "comment_lines":{
+        "prefix":";"
+    },
+    "comments":{
+        "prefix":"*"
+    }
+}
