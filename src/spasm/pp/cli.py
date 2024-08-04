@@ -19,6 +19,7 @@ If not, see <https://www.gnu.org/licenses/>. 
 ---
 """
 
+import os
 import sys
 from argparse import ArgumentParser, RawDescriptionHelpFormatter
 
@@ -112,7 +113,7 @@ If not, see <https://www.gnu.org/licenses/>. 
             raise ERROR
 
         specKind = stylesheetSpec[:specKindMarkPosition]
-        if specKind not in ["builtin"]:
+        if specKind not in ["builtin", "file"]:
             raise ERROR
 
         specValue = stylesheetSpec[specKindMarkPosition + 1 :]
@@ -125,6 +126,8 @@ If not, see <https://www.gnu.org/licenses/>. 
                 raise ERROR
         elif specKind == "file":
             # place holder for custom stylesheets
+            if os.path.isfile(specValue):
+                raise ValueError(f"found file {specValue}")
             raise ERROR
         else:
             raise ERROR
