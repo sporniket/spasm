@@ -25,6 +25,7 @@ from argparse import ArgumentParser, RawDescriptionHelpFormatter
 
 from .processor import SourceProcessor
 from .stylesheet.builtin import SPORNIKET, HERITAGE
+from .stylesheet.loader import StylesheetLoader
 from ._utils import _is_empty_string
 
 
@@ -125,10 +126,7 @@ If not, see <https://www.gnu.org/licenses/>. 
             else:
                 raise ERROR
         elif specKind == "file":
-            # place holder for custom stylesheets
-            if os.path.isfile(specValue):
-                raise ValueError(f"found file {specValue}")
-            raise ERROR
+            return StylesheetLoader(specValue).perform()
         else:
             raise ERROR
 
