@@ -1,5 +1,5 @@
 """
-Test suite using the custom stylesheet files.
+Test suite using the custom stylesheet file `empty.json`.
 ---
 (c) 2024 David SPORN
 ---
