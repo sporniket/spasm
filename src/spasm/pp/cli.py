@@ -19,11 +19,13 @@ If not, see <https://www.gnu.org/licenses/>. 
 ---
 """
 
+import os
 import sys
 from argparse import ArgumentParser, RawDescriptionHelpFormatter
 
 from .processor import SourceProcessor
 from .stylesheet.builtin import SPORNIKET, HERITAGE
+from .stylesheet.loader import StylesheetLoader
 from ._utils import _is_empty_string
 
 
@@ -112,7 +114,7 @@ If not, see <https://www.gnu.org/licenses/>. 
             raise ERROR
 
         specKind = stylesheetSpec[:specKindMarkPosition]
-        if specKind not in ["builtin"]:
+        if specKind not in ["builtin", "file"]:
             raise ERROR
 
         specValue = stylesheetSpec[specKindMarkPosition + 1 :]
@@ -124,8 +126,7 @@ If not, see <https://www.gnu.org/licenses/>. 
             else:
                 raise ERROR
         elif specKind == "file":
-            # place holder for custom stylesheets
-            raise ERROR
+            return StylesheetLoader(specValue).perform()
         else:
             raise ERROR
 

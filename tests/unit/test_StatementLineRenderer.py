@@ -19,7 +19,7 @@ If not, see <https://www.gnu.org/licenses/>. 
 ---
 """
 
-from spasm.pp.stylesheet.builtin import SPORNIKET
+from spasm.pp.stylesheet.builtin import SPORNIKET, HERITAGE
 from spasm.pp.statement_line import StatementLine, StatementLineRenderer
 
 
@@ -31,7 +31,11 @@ def test_that__StatementLineRenderer_render__works():
     statement.comment = "end of line"
     assert (
         StatementLineRenderer().render(statement, SPORNIKET)
-        == "                      that's: all folks            ; end of line"
+        == "                      that's: all folks           ; end of line"
+    )
+    assert (
+        StatementLineRenderer().render(statement, HERITAGE)
+        == "that's          all     folks   ; end of line"
     )
 
 
@@ -49,5 +53,30 @@ def test_that__StatementLineRenderer_render__supports_comment_only_statement():
     renderer.denyCommentBlock()
     assert (
         renderer.render(statement, SPORNIKET)
-        == "                                                   ; just a comment"
+        == "                                                  ; just a comment"
+    )
+
+
+def test_that_StatementLineRenderer_renderLineBody__supports_long_operands():
+    statement = StatementLine()
+    statement.label = None
+    statement.mnemonic = "line"
+    statement.operands = "very,long,long,long,long,long,long,long,long,long,long"
+    statement.comment = None
+    renderer = StatementLineRenderer()
+    assert (
+        renderer.renderLineBody(statement, HERITAGE, 16, 16)
+        == "line    very,long,long,long,long,long,long,long,long,long,long"
+    )
+
+
+def test_that_StatementLineRenderer_renderLineBody__pads_short_operations():
+    statement = StatementLine()
+    statement.label = None
+    statement.mnemonic = "all"
+    statement.operands = "folks"
+    statement.comment = None
+    renderer = StatementLineRenderer()
+    assert (
+        renderer.renderLineBody(statement, SPORNIKET, 30, 1) == "all folks           "
     )

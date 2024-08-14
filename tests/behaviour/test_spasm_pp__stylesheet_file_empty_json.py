@@ -1,5 +1,5 @@
 """
-Test suite using the builtin stylesheet 'HERITAGE'.
+Test suite using the custom stylesheet file `empty.json`.
 ---
 (c) 2024 David SPORN
 ---
@@ -42,7 +42,7 @@ from .factory_of_verifications_for_stylesheet_default import (
 )
 
 
-ARGS = ["prog", "--stylesheet", "builtin:heritage"]
+ARGS = ["prog", "--stylesheet", "file:tests/data/empty.json"]
 
 
 def test_that_it_does_pretty_print_comment_lines():

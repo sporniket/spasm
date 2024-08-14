@@ -1,0 +1,9 @@
+{
+    "labels":{
+        "align":"right",
+        "margin_space":5,
+        "ignore_align_mnemonics":[
+            "macro"
+        ]
+    }
+}

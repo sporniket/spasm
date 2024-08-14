@@ -51,19 +51,20 @@ class StatementLineRenderer:
         """Render the label, INCLUDING A SEPARATING SPACE"""
         tabStop = stylesheet["tab_stops"]["labels"]["position"]
         marginWidth = stylesheet["labels"]["margin_space"]
-        minimalLength = tabStop + marginWidth
+        # REMOVE minimalLength = tabStop - marginWidth
+        isLeftAlign = stylesheet["labels"]["align"] == "left"
+        isRightAlign = ~isLeftAlign
         supplementalMarginOfShortLabels = (
             len(stylesheet["labels"]["postfix"])
-            if stylesheet["labels"]["force_postfix"]
-            or stylesheet["labels"]["align"] != "left"
+            if stylesheet["labels"]["force_postfix"] or isRightAlign
             else 0
         )
-        lenOfShortLabel = tabStop - supplementalMarginOfShortLabels
+        lenOfShortLabel = tabStop - supplementalMarginOfShortLabels - marginWidth
 
         if _is_empty_string(line.label):
             # no label
-            return " " * (minimalLength)
-        elif len(line.label) >= lenOfShortLabel:
+            return " " * (tabStop)
+        elif len(line.label) > lenOfShortLabel:
             # long label
             postpadding = " " * marginWidth
             postfix = (
@@ -76,71 +77,85 @@ class StatementLineRenderer:
             # short label
             align = stylesheet["labels"]["align"]
             if (
-                align == "left"
+                isLeftAlign
                 or line.mnemonic.lower()
                 in stylesheet["labels"]["ignore_align_mnemonics"]
             ):
-                padding = " " * (minimalLength)
+                padding = " " * (tabStop)
                 postfix = (
                     stylesheet["labels"]["postfix"]
                     if stylesheet["labels"]["force_postfix"]
                     else ""
                 )
-                return f"{line.label}{postfix}{padding}"[:minimalLength]
+                return f"{line.label}{postfix}{padding}"[:tabStop]
             else:
                 padding = " " * (tabStop)
                 postfix = stylesheet["labels"]["postfix"]
                 postpadding = " " * marginWidth
-                return f"{padding}{line.label}{postfix}{postpadding}"[-minimalLength:]
+                return f"{padding}{line.label}{postfix}{postpadding}"[-tabStop:]
 
     def renderLineBody(
-        self, line: StatementLine, stylesheet, lenOfRenderedLabel: int
+        self,
+        line: StatementLine,
+        stylesheet,
+        endOfLabel: int,
+        previousSpacing: int = 0,
     ) -> str:
-        startPosition = (
-            stylesheet["tab_stops"]["labels"]["position"]
-            + stylesheet["labels"]["margin_space"]
-        )
+        requiredSpacing = stylesheet["labels"]["margin_space"] - previousSpacing
+        padding = " " * requiredSpacing if requiredSpacing > 0 else ""
+        startPosition = stylesheet["tab_stops"]["labels"]["position"]
         tabStopMnemonic = stylesheet["tab_stops"]["mnemonic"]["position"]
-        widthOfMnemonic = tabStopMnemonic - startPosition
         tabStopsOperands = stylesheet["tab_stops"]["operands"]["position"]
-        widthOfOperands = tabStopsOperands - tabStopMnemonic - 1
+
+        # Verify and adjust each position
+        if startPosition < endOfLabel:
+            startPosition = endOfLabel
+        if tabStopMnemonic < startPosition:
+            tabStopMnemonic = startPosition
+        if tabStopsOperands < tabStopMnemonic:
+            tabStopsOperands = tabStopMnemonic
+        widthOfMnemonic = tabStopMnemonic - startPosition
+        widthOfOperands = tabStopsOperands - tabStopMnemonic
         widthOfOperation = tabStopsOperands - startPosition
 
         if line.isNoOperation():
             return " " * widthOfOperation
         elif _is_empty_string(line.operands):
+            rendered = f"{padding}{line.mnemonic}"
             postMnemonicPadding = " " * widthOfOperation
             return (
-                f"{line.mnemonic}"
-                if len(line.mnemonic) >= widthOfMnemonic
-                or len(line.mnemonic) + lenOfRenderedLabel >= tabStopsOperands
-                else f"{line.mnemonic}{postMnemonicPadding}"[:widthOfOperation]
+                rendered
+                if len(rendered) >= widthOfOperation
+                else f"{rendered}{postMnemonicPadding}"[:widthOfOperation]
             )
         else:
             postMnemonicPadding = " " * widthOfMnemonic
+            rendered = f"{padding}{line.mnemonic}"
             mnemonicPart = (
-                f"{line.mnemonic}"
-                if len(line.mnemonic) >= widthOfMnemonic
-                or len(line.mnemonic) + lenOfRenderedLabel >= tabStopMnemonic
-                else f"{line.mnemonic}{postMnemonicPadding}"[:widthOfMnemonic]
+                rendered
+                if len(rendered) >= widthOfMnemonic
+                else f"{rendered}{postMnemonicPadding}"[:widthOfMnemonic]
             )
 
             postOperandsPadding = " " * widthOfOperands
+            paddingOperands = (
+                " " if len(mnemonicPart.rstrip()) == len(mnemonicPart) else ""
+            )
+            rendered = f"{mnemonicPart}{paddingOperands}{line.operands}"
             return (
-                f"{mnemonicPart} {line.operands}"
-                if len({line.operands}) >= widthOfOperands
-                or len(mnemonicPart) + 1 + len(line.operands) + lenOfRenderedLabel
-                >= tabStopsOperands
-                else f"{mnemonicPart} {line.operands}{postOperandsPadding}"[
-                    :widthOfOperation
-                ]
+                rendered
+                if len(rendered) >= widthOfOperation
+                else f"{rendered}{postOperandsPadding}"[:widthOfOperation]
             )
 
-    def renderComment(self, line: StatementLine, stylesheet) -> str:
+    def renderComment(
+        self, line: StatementLine, stylesheet, previousSpacing: int = 0
+    ) -> str:
         if _is_empty_string(line.comment):
             return ""
         else:
-            padding = " " * stylesheet["comments"]["margin_space"]
+            requiredSpacing = stylesheet["comments"]["margin_space"] - previousSpacing
+            padding = " " * requiredSpacing if requiredSpacing > 0 else ""
             prefix = stylesheet["comments"]["prefix"]
             toRender = line.comment
             return f"{padding}{prefix} {toRender}"
@@ -151,9 +166,19 @@ class StatementLineRenderer:
             return ""
         if line.isCommentOnly() and self.commentBlockEnabled:
             prefix = " " * stylesheet["tab_stops"]["labels"]["position"]
-            return f"{prefix} ; {line.comment}".rstrip()
+            renderedComment = self.renderComment(line, stylesheet, len(prefix))
+            return f"{prefix}{renderedComment}".rstrip()
         else:
             renderedLabel = self.renderLabel(line, stylesheet)
-            renderedLineBody = self.renderLineBody(line, stylesheet, len(renderedLabel))
-            renderedComment = self.renderComment(line, stylesheet)
+            startOfLineBody = len(renderedLabel)
+            spacingBeforeLineBody = startOfLineBody - len(renderedLabel.rstrip())
+            renderedLineBody = self.renderLineBody(
+                line, stylesheet, startOfLineBody, spacingBeforeLineBody
+            )
+            spacingBeforeComment = (
+                spacingBeforeLineBody
+                if line.isNoOperation()
+                else len(renderedLineBody) - len(renderedLineBody.rstrip())
+            )
+            renderedComment = self.renderComment(line, stylesheet, spacingBeforeComment)
             return f"{renderedLabel}{renderedLineBody}{renderedComment}".rstrip()

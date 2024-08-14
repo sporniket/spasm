@@ -1,0 +1,30 @@
+{
+    "tab_stops":{
+        "labels":{
+            "position":-1
+        },
+        "mnemonic":{
+            "position":-2
+        },
+        "operands":{
+            "position":-3
+        }
+    },
+    "tabulation":{
+        "width":0
+    },
+    "labels":{
+        "align":"whatever",
+        "postfix":"?",
+        "margin_space":0,
+        "force_postfix":"not a boolean",
+        "ignore_align_mnemonics":"not an array"
+    },
+    "comment_lines":{
+        "prefix":"whatever"
+    },
+    "comments":{
+        "prefix":"whatever",
+        "margin_space":0
+    }
+}
