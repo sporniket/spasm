@@ -142,8 +142,47 @@ If not, see <https://www.gnu.org/licenses/>. 
             print(e, file=sys.stderr)
             return 1
         else:
-            for line in sys.stdin:
-                self.processLine(line, stylesheet)
+            if len(args.sources) > 0:
+                # EITHER process given list of files...
+                sourcesErrors = []
+
+                # -- Check the list of files
+                for source in args.sources:
+                    if os.path.exists(source):
+                        if os.path.isfile(source):
+                            # NO PROBLEM
+                            continue
+                        else:
+                            sourcesErrors += [
+                                {"errorType": "NOT_A_FILE", "path": source}
+                            ]
+                    else:
+                        sourcesErrors += [{"errorType": "MISSING_FILE", "path": source}]
+                if len(sourcesErrors) > 0:
+                    report = []
+                    for e in sourcesErrors:
+                        message = (
+                            f"* MISSING : {e['path']}"
+                            if e["errorType"] == "MISSING_FILE"
+                            else f"* NOT A FILE : {e['path']}"
+                        )
+                        report += [message]
+                    report = "\n".join(report)
+                    print(
+                        f"ERROR -- in given list of files :\n{report}", file=sys.stderr
+                    )
+                    return 1
+
+                # -- Proceed
+                for source in args.sources:
+                    with open(source, "rt") as f:
+                        lines = f.readlines()
+                    for line in lines:
+                        self.processLine(line, stylesheet)
+            else:
+                # ...OR process standard input
+                for line in sys.stdin:
+                    self.processLine(line, stylesheet)
 
             return 0
 
