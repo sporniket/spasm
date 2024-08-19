@@ -177,10 +177,40 @@ If not, see <https://www.gnu.org/licenses/>. 
                 for source in args.sources:
                     with open(source, "rt") as f:
                         lines = f.readlines()
-                    for line in lines:
-                        self.processLine(line, stylesheet)
+                    if args.rewrite:
+                        # Rewrite mode
+                        result = []
+                        isDifferent = False
+                        for line in lines:
+                            # -- remove trailing "\n"
+                            # -- because it triggers false difference
+                            sourceLine = line[:-1] if line.endswith("\n") else line
+                            processedLine = self._processor.process_line(
+                                sourceLine, stylesheet
+                            )
+                            result += [processedLine]
+                            isDifferent = isDifferent or processedLine != sourceLine
+                        if isDifferent:
+                            with open(source, "wt") as f:
+                                f.write("\n".join(result))
+                                f.write("\n")
+                    else:
+                        # Normal mode
+                        for line in lines:
+                            self.processLine(line, stylesheet)
+                        print("")
             else:
                 # ...OR process standard input
+
+                # -- unless it is rewrite mode
+                if args.rewrite:
+                    print(
+                        "ERROR -- rewrite mode requires a list of files",
+                        file=sys.stderr,
+                    )
+                    return 1
+
+                # -- Proceed
                 for line in sys.stdin:
                     self.processLine(line, stylesheet)
 

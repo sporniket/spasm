@@ -48,7 +48,7 @@ def makeTmpDirOrDie(suffix: str = None) -> str:
 
 
 def initializeTmpWorkspace(files: List[str]) -> str:
-    tmp_dir = makeTmpDirOrDie(time.time())
+    tmp_dir = makeTmpDirOrDie(f"test_{time.time()}")
     for file in files:
         if file[-2:].upper() == ",A":
             file = file[:-2]
