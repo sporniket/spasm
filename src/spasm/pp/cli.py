@@ -81,20 +81,6 @@ If not, see <https://www.gnu.org/licenses/>. 
             action="store_true",
             help=f"Replace the source files by their pretty-printed version WHEN THERE IS A DIFFERENCE.",
         )
-        commandGroup.add_argument(
-            "-o",
-            "--output",
-            metavar="<output file>",
-            type=str,
-            help=f"Create the specified output file and write the output to that file instead of the standard output. When the output file already exists, it is replaced by the new version.",
-        )
-        commandGroup.add_argument(
-            "-d",
-            "--into",
-            metavar="<output directory>",
-            type=str,
-            help=f"Store the pretty-printed version of the sources files into the output directory. Existing files in that output directory are replaced when their names matches with one of the source files.",
-        )
 
         return parser
 
@@ -215,21 +201,3 @@ If not, see <https://www.gnu.org/licenses/>. 
                     self.processLine(line, stylesheet)
 
             return 0
-
-    def runTMP(self):
-        stylesheet = SPORNIKET
-        if len(args.sources) > 0:
-            for source in args.sources:
-                if source == "-":
-                    for line in sys.stdin:
-                        self.processLine(line, stylesheet)
-                else:
-                    with open(source, "rt") as f:
-                        lines = f.readlines()
-                    for line in lines:
-                        self.processLine(line, stylesheet)
-        else:
-            for line in sys.stdin:
-                self.processLine(line, stylesheet)
-
-        return 0

@@ -19,7 +19,6 @@ If not, see <https://www.gnu.org/licenses/>. 
 ---
 """
 
-from ..consts import DIRECTIVES__MACRO
 from .._utils import _is_empty_string
 
 
@@ -118,7 +117,3 @@ class StatementLine:
 
     def isOperationWithoutComment(self) -> bool:
         return not _is_empty_string(self.mnemonic) and _is_empty_string(self.comment)
-
-    def isMacroDeclaration(self) -> bool:
-        m = self.mnemonic.lower()
-        return m in DIRECTIVES__MACRO

@@ -24,7 +24,6 @@ from ..consts import (
     MARKERS__STRING,
     MARKERS__LABEL,
     WHITESPACES,
-    DIRECTIVES__MACRO,
 )
 from .model import StatementLine
 
