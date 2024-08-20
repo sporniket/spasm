@@ -9,12 +9,25 @@
 
 ### Synopsys
 
-`spasm_pp`
+`spasm_pp [--help] [--stylesheet <stylesheet>] [--rewrite] [<source files>...]`
+
+#### Positional arguments
+
+* `<source files>...` : an optionnal list of source files ; when no files are provided, use the standard input instead.
+
+#### Options
+
+*  `-h`, `--help`: shows an help message and exits.
+*  `--stylesheet <stylesheet>` : specifies the formatting rules to follow, either `builtin:heritage` (the default), or `builtin:sporniket`, or `file:path/to/file`
+*  `-r`, `--rewrite` : **when source files are provided**, replace each of the source files by their pretty-printed version **when there is a difference**. In other word, a source file that is already formatted according to the stylesheet is left untouched.
+
 
 ### Description
 
-Reads the standard input, and outputs each line as a formatted line of assembly 
-code, following the builtin formatting rules.
+Reads the standard input or a list of input files, and either outputs each line as a formatted line of assembly 
+code into the standard output, or rewrite each input file that has been modified by the format process.
+
+The formatting follows a set rules parameterized through a _stylesheet_
 
 ### Typical invocation
 
@@ -32,9 +45,25 @@ spasm_pp <mysource.s >somewhere.s
 cat mysource.s | spasm_pp | echo > somewhere.s
 ```
 
+#### Using a custom stylesheet
+
+**Given** a styleshee file `./config/mystylesheet.json`
+
+```
+spasm_pp --stylesheet file:./config/mystylesheet.json <mysource.s
+```
+
 #### Batch processing all the source files of the current folder
 
-_Written for the bash shell_
+> _Written for the bash shell_
+
+* Using the `--rewrite` option (recommended) :
+
+```
+spasm_pp --rewrite $(ls *.s)
+```
+
+* Using the pretty printer as a filter (each source file is unconditionnaly rewritten):
 
 ```
 for fic in $(ls *.s); do mv $fic tmp.$fic ; spasm_pp <tmp.$fic >$fic ; rm tmp.$fic ; done
@@ -58,13 +87,13 @@ for fic in $(ls *.s); do mv $fic tmp.$fic ; spasm_pp <tmp.$fic >$fic ; rm tmp.$f
 >
 > **spasm_pp** has been written with the target assembler _Devpac_ for the "Motorola 68k" ISA in mind, and my target is to succesfully compile my programs using this syntax with [vasm](http://sun.hasenbraten.de/vasm/) and the switches `-devpac -warncomm -nomsg=2054`, but I believe that most assembler of that time where basically following those general principles.
 
-## Formatting rules for comment lines
+### Formatting rules for comment lines
 
 * The first char WILL be the star `*`
 * If the second characters from the source line is a star `*`, it will be output just after the first star, otherwise a space ` ` is added.
 * Leading tabulations `\t` are converted into a sequence of at most 4 spaces ` `, the actual number allowing to put the next char at a position that is a multiple of 4.
 
-## Formatting rules for statement lines
+### Formatting rules for statement lines
 
 The principle is that there is a margin at position 30 where the mnemonic part WILL start.
 
