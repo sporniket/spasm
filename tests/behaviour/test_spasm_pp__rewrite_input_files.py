@@ -55,7 +55,7 @@ def test_that_it_rewrite_only_modified_files_from_given_input_files_list():
     )
     targetFiles = [os.path.join(tmp_dir, f) for f in fileNames]
     timeStamps = [os.path.getmtime(f) for f in targetFiles]
-    time.sleep(2)  # wait 2 seconds to detect file updates
+    time.sleep(2.1)  # wait 2 seconds (and a little bit more) to detect file updates
 
     # execute
     with patch.object(sys, "argv", ARGS + targetFiles):
