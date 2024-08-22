@@ -104,7 +104,7 @@ for fic in $(ls *.s); do mv $fic tmp.$fic ; spasm_pp <tmp.$fic >$fic ; rm tmp.$f
 
 Custom stylesheets **overrides** the settings of the default stylesheets, meaning that it CAN be minimized to contains only the wanted differences.
 
-See [README-pp-stylesheet.md](./README-pp-stylesheet.md) for the specification of the content of the stylesheet.
+See [README-pp-stylesheet.md](./README-pp--stylesheet.md) for the specification of the content of the stylesheet.
 
 The builtin stylesheet `heritage` is the same as the following custom stylesheet : 
 
@@ -129,7 +129,7 @@ The builtin stylesheet `heritage` is the same as the following custom stylesheet
         "postfix":":",
         "margin_space":1,
         "force_postfix":false,
-        "ignore_align_mnemonics":"None"
+        "ignore_align_mnemonics":null
     },
     "comment_lines":{
         "prefix":"*"
