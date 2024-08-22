@@ -45,9 +45,18 @@ spasm_pp <mysource.s >somewhere.s
 cat mysource.s | spasm_pp | echo > somewhere.s
 ```
 
+#### Using a builtin stylesheet
+
+There are 2 builtin stylesheets : `heritage` (the default) and `sporniket`
+
+```
+spasm_pp --stylesheet builtin:heritage <mysource.s
+spasm_pp --stylesheet builtin:sporniket <mysource.s
+```
+
 #### Using a custom stylesheet
 
-**Given** a styleshee file `./config/mystylesheet.json`
+**Given** a stylesheet file `./config/mystylesheet.json`
 
 ```
 spasm_pp --stylesheet file:./config/mystylesheet.json <mysource.s
@@ -69,11 +78,13 @@ spasm_pp --rewrite $(ls *.s)
 for fic in $(ls *.s); do mv $fic tmp.$fic ; spasm_pp <tmp.$fic >$fic ; rm tmp.$fic ; done
 ```
 
-## Formatting rules
+## Formatting
+
+### Modelization of lines of codes
 
 **spasm_pp** recognizes two types of lines in an assembly source :
 
-* **Comment lines**, that start with a star `*` or a semi-colon `;`.
+* **Comment lines**, that start with a star `*` or a semi-colon `;`. _A doubled mark will be recognised as a **special comment line** (this is a convention specific to this tool)_
 * **Statement lines**, that start with anything else, and break down into four optionnal parts, each separated by a space or a specified marker : 
   * a _label_ part to identify a line of code, when not starting at the beginning of the line, it MUST have the postfix colon `:` ; 
   * then a _mnemonic_ part that holds an operation code from the target ISA (Instruction Set Architecture), a macro name or a directive of the target assembler ; 
@@ -87,24 +98,108 @@ for fic in $(ls *.s); do mv $fic tmp.$fic ; spasm_pp <tmp.$fic >$fic ; rm tmp.$f
 >
 > **spasm_pp** has been written with the target assembler _Devpac_ for the "Motorola 68k" ISA in mind, and my target is to succesfully compile my programs using this syntax with [vasm](http://sun.hasenbraten.de/vasm/) and the switches `-devpac -warncomm -nomsg=2054`, but I believe that most assembler of that time where basically following those general principles.
 
+### Stylesheet for setting the format
+
+**spasm_pp** has 2 builtin stylesheets, and accept custom stylesheets that are json documents.
+
+Custom stylesheets **overrides** the settings of the default stylesheets, meaning that it CAN be minimized to contains only the wanted differences.
+
+See [README-pp-stylesheet.md](./README-pp-stylesheet.md) for the specification of the content of the stylesheet.
+
+The builtin stylesheet `heritage` is the same as the following custom stylesheet : 
+
+```json
+{
+    "tab_stops":{
+        "labels":{
+            "position":16
+        },
+        "mnemonic":{
+            "position":24
+        },
+        "operands":{
+            "position":32
+        }
+    },
+    "tabulation":{
+        "width":8
+    },
+    "labels":{
+        "align":"left",
+        "postfix":":",
+        "margin_space":1,
+        "force_postfix":false,
+        "ignore_align_mnemonics":"None"
+    },
+    "comment_lines":{
+        "prefix":"*"
+    },
+    "comments":{
+        "prefix":";",
+        "margin_space":1
+    }
+}
+```
+
+The builtin stylesheet `sporniket` is the same as the following custom stylesheet : 
+
+```json
+{
+    "tab_stops":{
+        "labels":{
+            "position":30
+        },
+        "mnemonic":{
+            "position":30
+        },
+        "operands":{
+            "position":50
+        }
+    },
+    "tabulation":{
+        "width":4
+    },
+    "labels":{
+        "align":"right",
+        "postfix":":",
+        "margin_space":1,
+        "force_postfix":true,
+        "ignore_align_mnemonics":[
+            "macro",
+            "macro.w",
+            "macro.l"
+        ]
+    },
+    "comment_lines":{
+        "prefix":"*"
+    },
+    "comments":{
+        "prefix":";",
+        "margin_space":1
+    }
+}
+```
+
 ### Formatting rules for comment lines
 
-* The first char WILL be the star `*`
-* If the second characters from the source line is a star `*`, it will be output just after the first star, otherwise a space ` ` is added.
-* Leading tabulations `\t` are converted into a sequence of at most 4 spaces ` `, the actual number allowing to put the next char at a position that is a multiple of 4.
+* The first char WILL be the one set by the stylesheet. For a _special comment line_, this first char is doubled.
+* A space is added
+* Leading tabulations `\t` are converted into a sequence of spaces, the actual number allowing to put the next char at a position that is a multiple of the tabulation width specified by the stylesheet.
 
 ### Formatting rules for statement lines
 
-The principle is that there is a margin at position 30 where the mnemonic part WILL start.
+The principle is that the label field, the mnemonic field and the operands field have a _tabulation stop_ that allows the formatter to vertically align between lines (provided the content of a field is short enough).
 
-> **Trivia** : for a width of 80 characters, the repartition 30-50 follows the golden ratio, rounded to the nearest tens (_80/phi ≈ 49.44_) ; the same for the 50 characters wide section the repartition 20-30 (_50/phi ≈ 30.90_) 
+> **Trivia** : for a width of 80 characters, the repartition 30-50 follows the golden ratio, rounded to the nearest tens (_80/phi ≈ 49.44_) ; the same for the 50 characters wide section the repartition 20-30 (_50/phi ≈ 30.90_). That's the guideline to chose the tabulation stops of the builtin style `sporniket`.
 
-* When there is a label part, it WILL be _right-aligned to that margin_, use the postfix marker `:` (colon) followed by a space.
+* When there is a label part, it can be _right-aligned to the tabulation stop_, in which case it WILL use the postfix marker, followed by at least the specified amount of space.
   * If the label is too large, it will push the mnemonic part as much as needed.
-  * **Exception of the right-alignment** : when the mnemonic part is the _macro_ directive (`macro`, `macro.w` or `macro.l`), then the label will be _left-aligned_, in other words the line starts with the label, still followed by the colon `:` and at least a space ` `.
-* When there is a mnemonic part, it WILL start at position 30.
-* When there is an operands part, it WILL start just after a space ` ` put just after the mnemonic part.
-* When there is a comment part, any leading and trailing whitespace (space ` ` and tabulation `\t`) are removed.
-  * When there is a mnemonic in the line, it WILL start just after the mnemonic + operands part AND at least position 50, prefixed with a space followed by a semi-colon followed by a space ` ; `.
-  * When the latest line with a mnemonic part had a comment part too, the following lines with only a comment part will be seen as continuation of the initial comment, and WILL start at position 50
-  * In any other case, the comment part WILL start at position 30.
+  * **Exception of the right-alignment** : when the mnemonic part is in the exclusion list, then the label will be _left-aligned_, in other words the line starts with the label.
+  * Left-aligned labels WILL have the postfix mark ONLY if it is forced.
+* When there is a mnemonic part, it WILL start from the label's tabulation stop, if possible.
+* When there is an operands part, it WILL start from the mnemonic's tabulation stop, if possible. There is a least one space between the mnemonic and the operands.
+* When there is a comment part, any leading and trailing whitespace (space ` ` and tabulation `\t`) of that part are removed.
+  * When there is a mnemonic in the line, it WILL start from the tabulation stop of the operands, with at least the specified amount of space, then the comment mark, then a space.
+  * For a statement line containing only a comment part :
+    * When the latest line with a mnemonic part had a comment part too, the comment part will be seen as continuation of the initial comment, and WILL start from the tabulation stop of the operands. An empty line disables that behaviour for the following lines.
+    * In any other case, the comment part WILL start from the tabulation stop of the label.

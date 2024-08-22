@@ -61,3 +61,26 @@ def test_that_it_supports_prefix_specification_for_comments_and_comment_lines():
                 do      thing   * comment after something
 """
         )
+
+
+def test_that_it_format_correctly_special_comment_lines():
+    input_lines = [
+        "** comment line 1 is special",
+        "*; comment line 2 is normal",
+        ";; comment line 3 is special",
+        ";* comment line 4 is normal",
+    ]
+
+    with patch.object(sys, "argv", ARGS):
+        with patch.object(sys, "stdin", mockStdInput(input_lines)):
+            with redirect_stdout(io.StringIO()) as out:
+                returnCode = PrettyPrinterCli().run()
+        assert returnCode == 0
+        assert (
+            out.getvalue()
+            == """;; comment line 1 is special
+; ; comment line 2 is normal
+;; comment line 3 is special
+; * comment line 4 is normal
+"""
+        )

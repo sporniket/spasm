@@ -47,7 +47,7 @@ def test_that_it_does_pretty_print_comment_lines():
         "; a comment line starting with a semi-colon",
         "* a comment line starting with a star",
         " * not a comment line",
-        ";* a comment line for documentation generator tools",
+        ";; a comment line for documentation generator tools",
         "** another comment line for documentation generator tools",
         "* * a normal comment line",
         ";a space will be inserted before the beginning of this comment",

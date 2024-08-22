@@ -44,16 +44,19 @@ class SourceProcessor:
         tabWidth = stylesheet["tabulation"]["width"]
         tabAsSpaces = " " * tabWidth
 
-        body = line[1:]
+        isSpecialCommentLine = len(line) >= 2 and line[1] == line[0]
+
+        body = line[2:] if isSpecialCommentLine else line[1:]
         if _is_empty_string(body):
             # sanity check
             return ""
 
         prefixStylesheet = stylesheet["comment_lines"]["prefix"]
-        prefix = f"{prefixStylesheet} "
-        if body[0] == prefixStylesheet:
-            body = body[1:]
-            prefix = f"{prefixStylesheet}{prefixStylesheet} "
+        prefix = (
+            f"{prefixStylesheet}{prefixStylesheet} "
+            if isSpecialCommentLine
+            else f"{prefixStylesheet} "
+        )
         current_pos = len(prefix)
         next_tab = self.compute_next_tab(current_pos, tabWidth)
         for i, c in enumerate(body):
