@@ -1,6 +1,6 @@
 [project]
 name = "spasm-by-sporniket"
-version = "0.0.1"
+version = "1.0.0"
 description = "Sporniket's toolbox for assembly language"
 authors = [
     {name = "Sporniket", email = "sporniket.studio@gmail.com"},
