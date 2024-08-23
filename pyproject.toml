@@ -6,7 +6,7 @@ authors = [
     {name = "Sporniket", email = "sporniket.studio@gmail.com"},
 ]
 dependencies = []
-requires-python = ">=3.10"
+requires-python = ">= 3.10"
 readme = "README.md"
 license = {text = "GPL-3.0-or-later"}
 keywords = ["assembler","pretty printer"]

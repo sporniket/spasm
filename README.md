@@ -50,7 +50,7 @@ Content
 
 > **SECURITY WARNING** : **spasm -- SPorniket's tools for ASseMbly** is a set of tools for manipulating files, and thus WILL allows attacks on the files systems. Do not install this project on servers.
 
-**spasm -- SPorniket's tools for ASseMbly** is written in [Python](http://python.org) language, version 3.8 or above, and consists of :
+**spasm -- SPorniket's tools for ASseMbly** is written in [Python](http://python.org) language, version 3.10 or above, and consists of :
 
 * [spasm_pp](./README-pp.md) : the Pretty Printer.
 
