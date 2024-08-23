@@ -31,4 +31,4 @@ jobs:
         pdm sync
     - name: Test with pytest
       run: |
-        pdm run test
+        pdm run _ci_only
