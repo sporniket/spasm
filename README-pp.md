@@ -42,7 +42,7 @@ spasm_pp <mysource.s >somewhere.s
 #### Using pipe
 
 ```
-cat mysource.s | spasm_pp | echo > somewhere.s
+cat mysource.s | spasm_pp | cat > somewhere.s
 ```
 
 #### Using a builtin stylesheet
