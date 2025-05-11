@@ -28,7 +28,7 @@ from ..consts import (
 from .model import StatementLine
 
 # state machine states for parsing a statement line
-ACCUMULATE_LABEL = 0  # when first character is not whitespace --> DONE_LABEL
+ACCUMULATE_LABEL = 0  # when first character is not whitespace --> WAIT_MNEMONIC
 WAIT_LABEL_OR_MNEMONIC = 1  # when first character is not whitespace, until not whitespace --> ACCUMULATE_LABEL_OR_MNEMONIC
 ACCUMULATE_LABEL_OR_MNEMONIC = (
     2  # until ':' --> WAIT_MNEMONIC ; or until whitespace --> WAIT_OPERANDS_OR_COMMENT
@@ -37,7 +37,7 @@ WAIT_MNEMONIC = 4  # until not whitespace --> ACCUMULATE_MNEMONIC
 ACCUMULATE_MNEMONIC = 5  # until whitespace --> WAIT_OPERANDS_OR_COMMENT
 WAIT_OPERANDS_OR_COMMENT = 6  # until not whitespace --> ACCUMULATE_OPERANDS
 ACCUMULATE_OPERANDS = (
-    7  # should understand string litterals ; until whitespace --> WAIT_COMMENT_BODY
+    7  # should understand string litterals ; until whitespace --> WAIT_COMMENT_OR_COMMENT_BODY
 )
 WAIT_COMMENT_OR_COMMENT_BODY = (
     8  # wait for comment marker or body --> ACCUMULATE_COMMENT
