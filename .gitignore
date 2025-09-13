@@ -1,8 +1,14 @@
-# START OF Special for this project
+#######<[ ADDITIONS TO BASE GITIGNORE ]>######
 tmp.*
 local.*
 # 
 
+# MacOS stuff
+.DS_Store
+
+# VSCode stuff
+.vscode/
+##############################################
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
