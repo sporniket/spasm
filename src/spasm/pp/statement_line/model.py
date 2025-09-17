@@ -19,9 +19,11 @@ If not, see <https://www.gnu.org/licenses/>. 
 ---
 """
 
+from dataclasses import dataclass, field
 from .._utils import _is_empty_string
 
 
+@dataclass
 class StatementLine:
     """Model of a statement line
     ---
@@ -29,63 +31,17 @@ class StatementLine:
 
     Then a renderer can process a model instance to perform a pretty print."""
 
-    def __init__(self):
-        self._label = None
-        self._mnemonic = None
-        self._operands = None
-        self._comment = None
+    label: str = field(default_factory=str)
+    """The label part of the line, without any marker"""
 
-    ##############################################
-    # Label part
-    ##############################################
+    mnemonic: str = field(default_factory=str)
+    """The mnemonic part of the line."""
 
-    @property
-    def label(self) -> str:
-        """The label part of the line, without any marker"""
-        return self._label if self._label is not None else ""
+    operands: str = field(default_factory=str)
+    """The operands list part of the line."""
 
-    @label.setter
-    def label(self, value: str):
-        self._label = value
-
-    ##############################################
-    # Mnemonic part
-    ##############################################
-
-    @property
-    def mnemonic(self) -> str:
-        """The mnemonic part of the line."""
-        return self._mnemonic if self._mnemonic is not None else ""
-
-    @mnemonic.setter
-    def mnemonic(self, value: str):
-        self._mnemonic = value
-
-    ##############################################
-    # Operands part
-    ##############################################
-
-    @property
-    def operands(self) -> str:
-        """The operands list."""
-        return self._operands if self._operands is not None else ""
-
-    @operands.setter
-    def operands(self, value: str):
-        self._operands = value
-
-    ##############################################
-    # Comment part
-    ##############################################
-
-    @property
-    def comment(self) -> str:
-        """The comment line, without any marker and whitespace striped on both ends"""
-        return self._comment if self._comment is not None else ""
-
-    @comment.setter
-    def comment(self, value: str):
-        self._comment = value
+    comment: str = field(default_factory=str)
+    """The comment part of the line, without any marker and whitespace striped on both ends"""
 
     ##############################################
     # Queries

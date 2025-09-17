@@ -36,9 +36,7 @@ ACCUMULATE_LABEL_OR_MNEMONIC = (
 WAIT_MNEMONIC = 4  # until not whitespace --> ACCUMULATE_MNEMONIC
 ACCUMULATE_MNEMONIC = 5  # until whitespace --> WAIT_OPERANDS_OR_COMMENT
 WAIT_OPERANDS_OR_COMMENT = 6  # until not whitespace --> ACCUMULATE_OPERANDS
-ACCUMULATE_OPERANDS = (
-    7  # should understand string litterals ; until whitespace --> WAIT_COMMENT_OR_COMMENT_BODY
-)
+ACCUMULATE_OPERANDS = 7  # should understand string litterals ; until whitespace --> WAIT_COMMENT_OR_COMMENT_BODY
 WAIT_COMMENT_OR_COMMENT_BODY = (
     8  # wait for comment marker or body --> ACCUMULATE_COMMENT
 )

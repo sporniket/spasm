@@ -53,7 +53,7 @@ class StatementLineRenderer:
         marginWidth = stylesheet["labels"]["margin_space"]
         # REMOVE minimalLength = tabStop - marginWidth
         isLeftAlign = stylesheet["labels"]["align"] == "left"
-        isRightAlign = ~isLeftAlign
+        isRightAlign = not isLeftAlign
         supplementalMarginOfShortLabels = (
             len(stylesheet["labels"]["postfix"])
             if stylesheet["labels"]["force_postfix"] or isRightAlign
