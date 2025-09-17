@@ -57,13 +57,31 @@ def test_that__StatementLineParser_parse__captures_last_position_label():
 
 
 def test_that__StatementLineParser_parse__supports_comment_only_statement():
+    # semi-colon comment line
+    # -- with some white spaces before
     statement = StatementLineParser().parse(" ; just a semi-colon comment")
     assert statement.label == ""
     assert statement.mnemonic == ""
     assert statement.operands == ""
     assert statement.comment == "just a semi-colon comment"
 
+    # -- immediately start comment
+    statement = StatementLineParser().parse("; just a semi-colon comment")
+    assert statement.label == ""
+    assert statement.mnemonic == ""
+    assert statement.operands == ""
+    assert statement.comment == "just a semi-colon comment"
+
+    # star comment line
+    # -- with some white spaces before
     statement = StatementLineParser().parse(" * just a star comment")
+    assert statement.label == ""
+    assert statement.mnemonic == ""
+    assert statement.operands == ""
+    assert statement.comment == "just a star comment"
+
+    # -- immediately start comment
+    statement = StatementLineParser().parse("* just a star comment")
     assert statement.label == ""
     assert statement.mnemonic == ""
     assert statement.operands == ""

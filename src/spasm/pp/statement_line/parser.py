@@ -57,7 +57,9 @@ class StatementLineParser:
         escapeStringMarker = False
         for i, c in enumerate(line):
             if i == 0:
-                if c not in WHITESPACES:
+                if c in MARKERS__COMMENT:
+                    self._state = WAIT_COMMENT_BODY
+                elif c not in WHITESPACES:
                     self._state = ACCUMULATE_LABEL
                     accumulator = c
                     result.label = accumulator
