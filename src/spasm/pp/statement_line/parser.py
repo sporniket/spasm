@@ -46,7 +46,7 @@ ACCUMULATE_COMMENT = 11  # until end of line
 INSIDE_STRING_LITTERAL = 12  # temporary state that waits for end of the string.
 
 
-class StatementLineParserEventListener:
+class StatementLineParserListener:
     """Abstraction of a listenor for StatementLineParser."""
 
     def onStartOfLine(self, sourceLine: str):
@@ -102,7 +102,7 @@ class StatementLineParserEventListener:
         pass
 
 
-class StatementLineBuilderOnParse(StatementLineParserEventListener):
+class StatementLineBuilderOnParse(StatementLineParserListener):
     """Builtin implementation of StatementLineParserEventListener that emit a StatementLine at the end."""
 
     def onStartOfLine(self, sourceLine: str):
@@ -143,7 +143,7 @@ class StatementLineParser:
     def parse(
         self,
         line: str,
-        listener: StatementLineParserEventListener,
+        listener: StatementLineParserListener,
     ) -> any:
         """Performs the actual parsing of a line, notifies a listener and returns the result of the later.
 
