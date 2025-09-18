@@ -20,7 +20,7 @@ If not, see <https://www.gnu.org/licenses/>. 
 """
 
 from spasm.parsers import StatementLineParser
-from .consts import MARKERS__COMMENT, WHITESPACES
+from spasm.parsers.consts import MARKERS__COMMENT, WHITESPACES
 from ._utils import _is_empty_string
 from .statement_line import (
     StatementLineBuilderOnParse,
