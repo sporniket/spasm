@@ -46,13 +46,119 @@ ACCUMULATE_COMMENT = 11  # until end of line
 INSIDE_STRING_LITTERAL = 12  # temporary state that waits for end of the string.
 
 
+class StatementLineParserEventListener:
+    """Abstraction of a listenor for StatementLineParser."""
+
+    def onStartOfLine(self, sourceLine: str):
+        """Allows the listener to know the line of code that will be processed.
+
+        Args:
+            sourceLine (str): the line of code.
+        """
+        pass
+
+    def onLabel(self, start: int, end: int):
+        """Message received when a label field has been fully located.
+
+        Args:
+            start (int): start of the field in the line of code (included)
+            end (int): end of the field in the line of code (excluded)
+        """
+        pass
+
+    def onMnemonic(self, start: int, end: int):
+        """Message received when a mnemonic field has been fully located.
+
+        Args:
+            start (int): start of the field in the line of code (included)
+            end (int): end of the field in the line of code (excluded)
+        """
+        pass
+
+    def onOperands(self, start: int, end: int):
+        """Message received when a operands field has been fully located.
+
+        Args:
+            start (int): start of the field in the line of code (included)
+            end (int): end of the field in the line of code (excluded)
+        """
+        pass
+
+    def onComment(self, start: int, end: int):
+        """Message received when a comment field has been fully located.
+
+        Args:
+            start (int): start of the field in the line of code (included)
+            end (int): end of the field in the line of code (excluded)
+        """
+        pass
+
+    def onEndOfLine(self) -> any:
+        """Processing is done, returns something.
+
+        Returns:
+            any: the something returned depends on the implementation
+        """
+        pass
+
+
+class StatementLineBuilderOnParse(StatementLineParserEventListener):
+    """Builtin implementation of StatementLineParserEventListener that emit a StatementLine at the end."""
+
+    def onStartOfLine(self, sourceLine: str):
+        self._currentLineContent = sourceLine
+        self._wipStatement = StatementLine()
+
+    def onLabel(self, start: int, end: int):
+        self._wipStatement.label = self._currentLineContent[start:end]
+
+    def onMnemonic(self, start: int, end: int):
+        self._wipStatement.mnemonic = self._currentLineContent[start:end]
+
+    def onOperands(self, start: int, end: int):
+        self._wipStatement.operands = self._currentLineContent[start:end]
+
+    def onComment(self, start: int, end: int):
+        self._wipStatement.comment = self._currentLineContent[start:end]
+
+    def onEndOfLine(self) -> any:
+        """Processing is done, returns a StatementLine.
+
+        Returns:
+            any: a fully completed StatementLine.
+        """
+        self._currentLineContent = None
+        return self._wipStatement
+
+
 class StatementLineParser:
+    """An ISA-agnostic statement line parser to locate the various fields of an assembly line of code.
+
+    The 4 identifiables fields are : the label, the mnemonic, the operands and the comment.
+    """
+
     def __init__(self):
         self._state = None
 
-    def parse(self, line: str) -> StatementLine:
-        result = StatementLine()
-        accumulator = ""
+    def parse(
+        self,
+        line: str,
+        listener: StatementLineParserEventListener = StatementLineBuilderOnParse(),
+    ) -> any:
+        """Performs the actual parsing of a line, notifies a listener and returns the result of the later.
+
+        Args:
+            line (str): the line of code to parse
+            listener (StatementLineParserEventListener, optional): the listener that will be notified, to perform actual processing. Defaults to StatementLineBuilderOnParse().
+
+        Raises:
+            ValueError: when the parser has a problem.
+
+        Returns:
+            any: whatever returns the listener.
+        """
+        listener.onStartOfLine(line)
+        start = 0
         stringMarker = '"'
         escapeStringMarker = False
         for i, c in enumerate(line):
@@ -61,24 +167,22 @@ class StatementLineParser:
                     self._state = WAIT_COMMENT_BODY
                 elif c not in WHITESPACES:
                     self._state = ACCUMULATE_LABEL
-                    accumulator = c
-                    result.label = accumulator
                 else:
                     self._state = WAIT_LABEL_OR_MNEMONIC
-                    accumulator = ""
                 continue
             else:
                 if self._state == ACCUMULATE_LABEL:
                     if c in MARKERS__COMMENT:
+                        listener.onLabel(start, i)
                         self._state = WAIT_COMMENT_BODY
+                        start = i
                         continue
                     elif c in WHITESPACES or c in MARKERS__LABEL:
-                        accumulator = ""
+                        listener.onLabel(start, i)
                         self._state = WAIT_MNEMONIC
+                        start = i
                         continue
                     else:
-                        accumulator += c
-                        result.label = accumulator
                         continue
                 elif self._state == WAIT_LABEL_OR_MNEMONIC:
                     if c in MARKERS__COMMENT:
@@ -86,26 +190,29 @@ class StatementLineParser:
                         continue
                     elif c not in WHITESPACES:
                         self._state = ACCUMULATE_LABEL_OR_MNEMONIC
-                        accumulator = c
-                        result.mnemonic = accumulator  # until disambiguation
+                        start = i
                         continue
                 elif self._state == ACCUMULATE_LABEL_OR_MNEMONIC:
                     if c in MARKERS__COMMENT:
+                        listener.onMnemonic(
+                            start, i
+                        )  # disambiguation in favor of mnemonic
                         self._state = WAIT_COMMENT_BODY
+                        start = i
                         continue
                     if c in MARKERS__LABEL:
-                        result.label = accumulator
-                        result.mnemonic = None  # disambiguation in favor of label
-                        accumulator = ""
+                        listener.onLabel(start, i)  # disambiguation in favor of label
                         self._state = WAIT_MNEMONIC
+                        start = i
                         continue
                     elif c in WHITESPACES:
-                        accumulator = ""
+                        listener.onMnemonic(
+                            start, i
+                        )  # disambiguation in favor of mnemonic
                         self._state = WAIT_OPERANDS_OR_COMMENT
+                        start = i
                         continue
                     else:
-                        accumulator += c
-                        result.mnemonic = accumulator  # until disambiguation
                         continue
                 elif self._state == WAIT_MNEMONIC:
                     if c in MARKERS__COMMENT:
@@ -113,20 +220,20 @@ class StatementLineParser:
                         continue
                     if c not in WHITESPACES:
                         self._state = ACCUMULATE_MNEMONIC
-                        accumulator = c
-                        result.mnemonic = accumulator
+                        start = i
                         continue
                 elif self._state == ACCUMULATE_MNEMONIC:
                     if c in MARKERS__COMMENT:
+                        listener.onMnemonic(start, i)
                         self._state = WAIT_COMMENT_BODY
+                        start = i
                         continue
                     if c in WHITESPACES:
-                        accumulator = ""
+                        listener.onMnemonic(start, i)
                         self._state = WAIT_OPERANDS_OR_COMMENT
+                        start = i
                         continue
                     else:
-                        accumulator += c
-                        result.mnemonic = accumulator
                         continue
                 elif self._state == WAIT_OPERANDS_OR_COMMENT:
                     if c not in WHITESPACES:
@@ -135,37 +242,37 @@ class StatementLineParser:
                             continue
                         else:
                             if c in MARKERS__STRING:
+                                start = i
                                 self._state = INSIDE_STRING_LITTERAL
                             else:
                                 self._state = ACCUMULATE_OPERANDS
-                            accumulator = c
-                            result.operands = accumulator
+                                start = i
                             continue
                 elif self._state == ACCUMULATE_OPERANDS:
                     if c in MARKERS__COMMENT:
+                        listener.onOperands(start, i)
                         self._state = WAIT_COMMENT_BODY
+                        start = i
                         continue
                     if c in MARKERS__STRING:
-                        accumulator += c
                         stringMarker = c
                         escapeStringMarker = False
                         self._state == INSIDE_STRING_LITTERAL
                         continue
                     elif c in WHITESPACES:
+                        listener.onOperands(start, i)
                         self._state = WAIT_COMMENT_OR_COMMENT_BODY
-                        accumulator = ""
+                        start = i
                         continue
                     else:
-                        accumulator += c
-                        result.operands = accumulator
                         continue
                 elif self._state == WAIT_COMMENT_OR_COMMENT_BODY:
                     if c in MARKERS__COMMENT:
                         self._state = WAIT_COMMENT_BODY
                         continue
                     elif c not in WHITESPACES:
-                        accumulator = c
                         self._state = ACCUMULATE_COMMENT
+                        start = i
                         continue
                     else:
                         continue
@@ -176,16 +283,11 @@ class StatementLineParser:
                 elif self._state == WAIT_COMMENT_BODY:
                     if c not in WHITESPACES:
                         self._state = ACCUMULATE_COMMENT
-                        accumulator = c
-                        result.comment = accumulator
+                        start = i
                         continue
                 elif self._state == ACCUMULATE_COMMENT:
-                    accumulator += c
-                    result.comment = accumulator
                     continue
                 elif self._state == INSIDE_STRING_LITTERAL:
-                    accumulator += c
-                    result.operands = accumulator
                     if c == stringMarker:
                         self._state = ACCUMULATE_OPERANDS
                     continue
@@ -193,5 +295,15 @@ class StatementLineParser:
                     raise ValueError(
                         f"Unknown state '{self._state}' at position {i}, character '{c}' while parsing line of code : {line}"
                     )
-
-        return result
+        if self._state == ACCUMULATE_LABEL:
+            listener.onLabel(start, len(line))
+        elif (
+            self._state == ACCUMULATE_LABEL_OR_MNEMONIC
+            or self._state == ACCUMULATE_MNEMONIC
+        ):
+            listener.onMnemonic(start, len(line))
+        elif self._state == ACCUMULATE_OPERANDS:
+            listener.onOperands(start, len(line))
+        elif self._state == ACCUMULATE_COMMENT:
+            listener.onComment(start, len(line))
+        return listener.onEndOfLine()
