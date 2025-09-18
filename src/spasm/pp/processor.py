@@ -21,7 +21,11 @@ If not, see <https://www.gnu.org/licenses/>. 
 
 from .consts import MARKERS__COMMENT, WHITESPACES
 from ._utils import _is_empty_string
-from .statement_line import StatementLineParser, StatementLineRenderer
+from .statement_line import (
+    StatementLineBuilderOnParse,
+    StatementLineParser,
+    StatementLineRenderer,
+)
 
 
 class SourceProcessor:
@@ -87,7 +91,7 @@ class SourceProcessor:
             self._renderer.allowCommentBlock()
             return self.process_comment_line(cleaned_line, stylesheet)
 
-        statementLine = self._parser.parse(cleaned_line)
+        statementLine = self._parser.parse(cleaned_line, StatementLineBuilderOnParse())
         if statementLine.isCommentedOperation():
             self._renderer.denyCommentBlock()
         elif statementLine.isEmpty() or statementLine.isOperationWithoutComment():

@@ -20,7 +20,12 @@ If not, see <https://www.gnu.org/licenses/>. 
 """
 
 from .model import StatementLine
-from .parser import StatementLineParser
+from .parser import StatementLineParser, StatementLineBuilderOnParse
 from .renderer import StatementLineRenderer
 
-__all__ = ["StatementLine", "StatementLineParser", "StatementLineRenderer"]
+__all__ = [
+    "StatementLine",
+    "StatementLineBuilderOnParse",
+    "StatementLineParser",
+    "StatementLineRenderer",
+]

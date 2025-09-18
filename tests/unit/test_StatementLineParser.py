@@ -19,12 +19,12 @@ If not, see <https://www.gnu.org/licenses/>. 
 ---
 """
 
-from spasm.pp.statement_line import StatementLineParser
+from spasm.pp.statement_line import StatementLineParser, StatementLineBuilderOnParse
 
 
 def test_that__StatementLineParser_parse__captures_last_position_comment():
     statement = StatementLineParser().parse(
-        "aShortLabel operation operand1,operand2 comment"
+        "aShortLabel operation operand1,operand2 comment", StatementLineBuilderOnParse()
     )
     assert statement.label == "aShortLabel"
     assert statement.mnemonic == "operation"
@@ -33,7 +33,9 @@ def test_that__StatementLineParser_parse__captures_last_position_comment():
 
 
 def test_that__StatementLineParser_parse__captures_last_position_operand():
-    statement = StatementLineParser().parse("aShortLabel operation operand1,operand2")
+    statement = StatementLineParser().parse(
+        "aShortLabel operation operand1,operand2", StatementLineBuilderOnParse()
+    )
     assert statement.label == "aShortLabel"
     assert statement.mnemonic == "operation"
     assert statement.operands == "operand1,operand2"
@@ -41,7 +43,9 @@ def test_that__StatementLineParser_parse__captures_last_position_operand():
 
 
 def test_that__StatementLineParser__parse_captures_last_position_mnemonic():
-    statement = StatementLineParser().parse("aShortLabel operation")
+    statement = StatementLineParser().parse(
+        "aShortLabel operation", StatementLineBuilderOnParse()
+    )
     assert statement.label == "aShortLabel"
     assert statement.mnemonic == "operation"
     assert statement.operands == ""
@@ -49,7 +53,9 @@ def test_that__StatementLineParser__parse_captures_last_position_mnemonic():
 
 
 def test_that__StatementLineParser_parse__captures_last_position_label():
-    statement = StatementLineParser().parse("aShortLabel")
+    statement = StatementLineParser().parse(
+        "aShortLabel", StatementLineBuilderOnParse()
+    )
     assert statement.label == "aShortLabel"
     assert statement.mnemonic == ""
     assert statement.operands == ""
@@ -59,14 +65,18 @@ def test_that__StatementLineParser_parse__captures_last_position_label():
 def test_that__StatementLineParser_parse__supports_comment_only_statement():
     # semi-colon comment line
     # -- with some white spaces before
-    statement = StatementLineParser().parse(" ; just a semi-colon comment")
+    statement = StatementLineParser().parse(
+        " ; just a semi-colon comment", StatementLineBuilderOnParse()
+    )
     assert statement.label == ""
     assert statement.mnemonic == ""
     assert statement.operands == ""
     assert statement.comment == "just a semi-colon comment"
 
     # -- immediately start comment
-    statement = StatementLineParser().parse("; just a semi-colon comment")
+    statement = StatementLineParser().parse(
+        "; just a semi-colon comment", StatementLineBuilderOnParse()
+    )
     assert statement.label == ""
     assert statement.mnemonic == ""
     assert statement.operands == ""
@@ -74,14 +84,18 @@ def test_that__StatementLineParser_parse__supports_comment_only_statement():
 
     # star comment line
     # -- with some white spaces before
-    statement = StatementLineParser().parse(" * just a star comment")
+    statement = StatementLineParser().parse(
+        " * just a star comment", StatementLineBuilderOnParse()
+    )
     assert statement.label == ""
     assert statement.mnemonic == ""
     assert statement.operands == ""
     assert statement.comment == "just a star comment"
 
     # -- immediately start comment
-    statement = StatementLineParser().parse("* just a star comment")
+    statement = StatementLineParser().parse(
+        "* just a star comment", StatementLineBuilderOnParse()
+    )
     assert statement.label == ""
     assert statement.mnemonic == ""
     assert statement.operands == ""
@@ -91,7 +105,8 @@ def test_that__StatementLineParser_parse__supports_comment_only_statement():
 def test_that__StatementLineParser_parse__ignore_spaces_in_string_operands():
     """Bug report #4"""
     statement = StatementLineParser().parse(
-        'messThatsAll            dc.b                    "Done, press any key to quit.",0'
+        'messThatsAll            dc.b                    "Done, press any key to quit.",0',
+        StatementLineBuilderOnParse(),
     )
     assert statement.label == "messThatsAll"
     assert statement.mnemonic == "dc.b"

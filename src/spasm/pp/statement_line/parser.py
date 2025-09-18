@@ -143,7 +143,7 @@ class StatementLineParser:
     def parse(
         self,
         line: str,
-        listener: StatementLineParserEventListener = StatementLineBuilderOnParse(),
+        listener: StatementLineParserEventListener,
     ) -> any:
         """Performs the actual parsing of a line, notifies a listener and returns the result of the later.
 
