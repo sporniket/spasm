@@ -19,7 +19,8 @@ If not, see <https://www.gnu.org/licenses/>. 
 ---
 """
 
-from spasm.pp.statement_line import StatementLineParser, StatementLineBuilderOnParse
+from spasm.parsers import StatementLineParser
+from spasm.pp.statement_line import StatementLineBuilderOnParse
 
 
 def test_that__StatementLineParser_parse__captures_last_position_comment():

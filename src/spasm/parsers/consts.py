@@ -19,12 +19,7 @@ If not, see <https://www.gnu.org/licenses/>. 
 ---
 """
 
-from .model import StatementLine
-from .parser import StatementLineBuilderOnParse
-from .renderer import StatementLineRenderer
-
-__all__ = [
-    "StatementLine",
-    "StatementLineBuilderOnParse",
-    "StatementLineRenderer",
-]
+MARKERS__COMMENT = [";", "*"]
+MARKERS__STRING = ['"', "'"]
+MARKERS__LABEL = [":"]
+WHITESPACES = [" ", "\t"]
