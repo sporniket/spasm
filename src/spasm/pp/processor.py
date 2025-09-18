@@ -32,6 +32,7 @@ class SourceProcessor:
 
     def __init__(self):
         self._parser = StatementLineParser()
+        self._parserListener = StatementLineBuilderOnParse()
         self._renderer = StatementLineRenderer()
 
     ##############################################
@@ -91,7 +92,7 @@ class SourceProcessor:
             self._renderer.allowCommentBlock()
             return self.process_comment_line(cleaned_line, stylesheet)
 
-        statementLine = self._parser.parse(cleaned_line, StatementLineBuilderOnParse())
+        statementLine = self._parser.parse(cleaned_line, self._parserListener)
         if statementLine.isCommentedOperation():
             self._renderer.denyCommentBlock()
         elif statementLine.isEmpty() or statementLine.isOperationWithoutComment():
