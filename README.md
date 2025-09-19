@@ -23,7 +23,7 @@ Content
 **spasm_pp**
 
   * Resolves #7 : [pp] 2 builtin styles and one used by default
-  * Resolves #8 : [pp] Support a provided stylesheet
+  * Resolves #8 : [pp] Support a provided stylesheet
   * Resolves #9 : [pp][tech] Naming in the builtin structures
   * Resolves #10 : [pp] Process a given list of files
   * Resolves #11 : [pp] Replace input files by their formatted version if there is a difference

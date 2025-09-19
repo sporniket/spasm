@@ -54,12 +54,17 @@ class StatementLineParser:
 
     def __init__(self):
         self._state = None
+        self._listener = None
 
-    def parse(
-        self,
-        line: str,
-        listener: StatementLineParserListener,
-    ) -> any:
+    @property
+    def listener(self) -> StatementLineParserListener:
+        return self._listener
+
+    @listener.setter
+    def listener(self, l: StatementLineParserListener):
+        self._listener = l
+
+    def parse(self, line: str) -> any:
         """Performs the actual parsing of a line, notifies a listener and returns the result of the later.
 
         Args:
@@ -72,6 +77,9 @@ class StatementLineParser:
         Returns:
             any: whatever returns the listener.
         """
+        listener = self.listener
+        if listener is None:
+            raise ValueError("no.listener")
         listener.onStartOfLine(line)
         start = 0
         stringMarker = '"'
