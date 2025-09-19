@@ -18,6 +18,10 @@ Content
 
 **spasm -- SPorniket's tools for ASseMbly** is a collection of generic tools for assembly language, that should work for any Instruction Set Architecture (ISA).
 
+### What's new in v1.1.0
+
+Extract into a reusable library the parsing of a line of code to locate the 4 fields that may be found inside. _See [the programming guide of that library](./README-StatementLineParser.md)_.
+
 ### What's new in v1.0.0
 
 **spasm_pp**
